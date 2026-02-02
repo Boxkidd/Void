@@ -1,1 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Void Dice</title>
+    <style>
+        :root { --cyan: #00f2ff; --onyx: #050505; --purple: #bc13fe; }
+        body { 
+            background-color: var(--onyx); color: white; margin: 0; 
+            font-family: 'Courier New', Courier, monospace; overflow: hidden;
+            display: flex; flex-direction: column; align-items: center; height: 100vh;
+        }
+        #essence-container { margin-top: 10vh; text-align: center; }
+        #essence-count { font-size: 3rem; color: var(--cyan); text-shadow: 0 0 10px var(--cyan); }
+        #die {
+            width: 120px; height: 120px; border: 2px solid var(--cyan);
+            margin: 50px 0; display: flex; align-items: center; justify-content: center;
+            font-size: 3rem; border-radius: 15px; box-shadow: 0 0 15px rgba(0,242,255,0.2);
+            cursor: pointer; transition: transform 0.1s;
+        }
+        #die:active { transform: scale(0.9); }
+        .btn {
+            background: var(--cyan); color: black; border: none; padding: 15px 40px;
+            font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 1rem;
+        }
+        .shop { width: 90%; margin-top: auto; margin-bottom: 20px; background: #111; padding: 15px; border-radius: 10px; }
+        .shop-item { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.8rem; }
+        .upgrade-btn { color: var(--cyan); cursor: pointer; text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <div id="essence-container">
+        <div style="letter-spacing: 5px; color: #444;">ESSENCE</div>
+        <div id="essence-count">0</div>
+    </div>
+
+    <div id="die" onclick="roll()">1</div>
+    
+    <button class="btn" onclick="roll()">ROLL</button>
+
+    <div class="shop">
+        <div class="shop-item">
+            <span>Auto-Roller (Lvl <span id="auto-lvl">0</span>)</span>
+            <span class="upgrade-btn" onclick="buyAuto()">Buy: <span id="auto-cost">100</span></span>
+        </div>
+        <div class="shop-item" id="prestige-area" style="display:none;">
+            <span style="color:var(--purple)">Transcend (Prestige)</span>
+            <span class="upgrade-btn" style="color:var(--purple)" onclick="transcend()">Get Shards</span>
+        </div>
+    </div>
+
+    <script>
+        let state = { essence: 0, autoLvl: 0, mult: 1, shards: 0 };
+
+        // Load Game
+        const saved = localStorage.getItem('voidDiceSave');
+        if (saved) state = JSON.parse(saved);
+
+        function updateUI() {
+            document.getElementById('essence-count').innerText = Math.floor(state.essence).toLocaleString();
+            document.getElementById('auto-lvl').innerText = state.autoLvl;
+            document.getElementById('auto-cost').innerText = Math.floor(100 * Math.pow(1.15, state.autoLvl));
+            
+            if (state.essence > 1000000 || state.shards > 0) {
+                document.getElementById('prestige-area').style.display = 'flex';
+            }
+            localStorage.setItem('voidDiceSave', JSON.stringify(state));
+        }
+
+        function roll() {
+            let val = Math.floor(Math.random() * 6) + 1;
+            document.getElementById('die').innerText = val;
+            let gain = val * state.mult * (1 + (state.shards * 0.1));
+            state.essence += gain;
+            updateUI();
+        }
+
+        function buyAuto() {
+            let cost = Math.floor(100 * Math.pow(1.15, state.autoLvl));
+            if (state.essence >= cost) {
+                state.essence -= cost;
+                state.autoLvl++;
+                updateUI();
+            }
+        }
+
+        function transcend() {
+            let gained = Math.floor(Math.sqrt(state.essence / 1000000));
+            if (gained >= 1) {
+                state.shards += gained;
+                state.essence = 0;
+                state.autoLvl = 0;
+                state.mult = 1;
+                alert(`You gained ${gained} Shards!`);
+                updateUI();
+            }
+        }
+
+        // Idle Loop
+        setInterval(() => {
+            if (state.autoLvl > 0) {
+                state.essence += (3.5 * state.autoLvl * state.mult * (1 + (state.shards * 0.1))) / 5;
+                updateUI();
+            }
+        }, 200);
+
+        updateUI();
+    </script>
+</body>
+</html>
 
