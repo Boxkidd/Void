@@ -31,6 +31,13 @@
 </head>
 <body>
 
+    <link rel="manifest" href="manifest.json">
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
+
     <div id="essence-container">
         <div style="letter-spacing: 5px; color: #444;">ESSENCE</div>
         <div id="essence-count">0</div>
