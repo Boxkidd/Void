@@ -3,117 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="manifest" href="manifest.json">
     <title>Void Dice</title>
     <style>
-        :root { --cyan: #00f2ff; --onyx: #050505; --purple: #bc13fe; }
+        :root { --cyan: #00f2ff; --onyx: #050505; --purple: #bc13fe; --gray: #444; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { 
             background-color: var(--onyx); color: white; margin: 0; 
             font-family: 'Courier New', Courier, monospace; overflow: hidden;
             display: flex; flex-direction: column; align-items: center; height: 100vh;
         }
-        #essence-container { margin-top: 10vh; text-align: center; }
-        #essence-count { font-size: 3rem; color: var(--cyan); text-shadow: 0 0 10px var(--cyan); }
-        #die {
-            width: 120px; height: 120px; border: 2px solid var(--cyan);
-            margin: 50px 0; display: flex; align-items: center; justify-content: center;
-            font-size: 3rem; border-radius: 15px; box-shadow: 0 0 15px rgba(0,242,255,0.2);
-            cursor: pointer; transition: transform 0.1s;
+        #essence-container { margin-top: 5vh; text-align: center; }
+        #essence-count { font-size: 3.5rem; color: var(--cyan); text-shadow: 0 0 15px rgba(0,242,255,0.4); font-weight: bold; }
+        
+        #dice-floor { 
+            display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; 
+            min-height: 150px; margin: 40px 0; width: 90%; 
         }
-        #die:active { transform: scale(0.9); }
-        .btn {
-            background: var(--cyan); color: black; border: none; padding: 15px 40px;
-            font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 1rem;
+        .die {
+            width: 80px; height: 80px; border: 2px solid var(--cyan);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2.5rem; border-radius: 12px; background: black;
+            box-shadow: 0 0 10px rgba(0,242,255,0.2); transition: transform 0.1s;
         }
-        .shop { width: 90%; margin-top: auto; margin-bottom: 20px; background: #111; padding: 15px; border-radius: 10px; }
-        .shop-item { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.8rem; }
-        .upgrade-btn { color: var(--cyan); cursor: pointer; text-decoration: underline; }
+
+        .btn-main {
+            background: var(--cyan); color: black; border: none; padding: 18px 60px;
+            font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 1.2rem;
+            box-shadow: 0 0 20px rgba(0,242,255,0.3);
+        }
+        .btn-main:active { transform: scale(0.95); }
+
+        .shop { 
+            width: 95%; max-width: 400px; margin-top: auto; margin-bottom: 20px; 
+            background: #0f0f0f; padding: 20px; border-radius: 15px;
+            border-top: 1px solid #222;
+        }
+        .shop-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .item-info { display: flex; flex-direction: column; }
+        .item-title { font-size: 0.9rem; font-weight: bold; }
+        .item-sub { font-size: 0.7rem; color: var(--gray); }
+        .upgrade-btn { 
+            color: var(--cyan); border: 1px solid var(--cyan); padding: 5px 12px; 
+            border-radius: 4px; font-size: 0.8rem; cursor: pointer;
+        }
+        .upgrade-btn.locked { color: var(--gray); border-color: var(--gray); opacity: 0.5; }
+        
+        #prestige-area { 
+            border-top: 1px solid #330033; padding-top: 15px; margin-top: 10px;
+        }
     </style>
 </head>
 <body>
 
-    <link rel="manifest" href="manifest.json">
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js');
-  }
-</script>
-
     <div id="essence-container">
-        <div style="letter-spacing: 5px; color: #444;">ESSENCE</div>
+        <div style="letter-spacing: 5px; color: var(--gray); font-size: 0.8rem;">VOID ESSENCE</div>
         <div id="essence-count">0</div>
+        <div id="shard-count" style="color: var(--purple); font-size: 0.8rem; margin-top: 5px;"></div>
     </div>
 
-    <div id="die" onclick="roll()">1</div>
+    <div id="dice-floor" onclick="roll()">
+        <div class="die">1</div>
+    </div>
     
-    <button class="btn" onclick="roll()">ROLL</button>
+    <button class="btn-main" onclick="roll()">ROLL</button>
 
     <div class="shop">
         <div class="shop-item">
-            <span>Auto-Roller (Lvl <span id="auto-lvl">0</span>)</span>
-            <span class="upgrade-btn" onclick="buyAuto()">Buy: <span id="auto-cost">100</span></span>
+            <div class="item-info">
+                <span class="item-title">Auto-Roller</span>
+                <span class="item-sub" id="auto-lvl">Level 0</span>
+            </div>
+            <div class="upgrade-btn" id="btn-auto" onclick="buyAuto()">Cost: 100</div>
         </div>
-        <div class="shop-item" id="prestige-area" style="display:none;">
-            <span style="color:var(--purple)">Transcend (Prestige)</span>
-            <span class="upgrade-btn" style="color:var(--purple)" onclick="transcend()">Get Shards</span>
+
+        <div class="shop-item" id="row-speed" style="display:none;">
+            <div class="item-info">
+                <span class="item-title">Turbo Speed</span>
+                <span class="item-sub" id="speed-lvl">x1.0</span>
+            </div>
+            <div class="upgrade-btn" id="btn-speed" onclick="buySpeed()">Cost: 1.0k</div>
+        </div>
+
+        <div class="shop-item" id="row-multi" style="display:none;">
+            <div class="item-info">
+                <span class="item-title">Extra Die</span>
+                <span class="item-sub" id="dice-count-sub">1 Die</span>
+            </div>
+            <div class="upgrade-btn" id="btn-multi" onclick="buyExtraDie()">Cost: 50k</div>
+        </div>
+
+        <div id="prestige-area" style="display:none;">
+            <div class="shop-item">
+                <div class="item-info">
+                    <span class="item-title" style="color:var(--purple)">TRANSCEND</span>
+                    <span class="item-sub" id="prestige-gain">+0 Shards</span>
+                </div>
+                <div class="upgrade-btn" style="color:var(--purple); border-color:var(--purple)" onclick="transcend()">ASCEND</div>
+            </div>
         </div>
     </div>
 
     <script>
-        let state = { essence: 0, autoLvl: 0, mult: 1, shards: 0 };
+        let state = { essence: 0, autoLvl: 0, speedLvl: 1, diceCount: 1, shards: 0 };
 
-        // Load Game
-        const saved = localStorage.getItem('voidDiceSave');
-        if (saved) state = JSON.parse(saved);
+        function save() { localStorage.setItem('voidDiceSave', JSON.stringify(state)); }
+        function load() {
+            const saved = localStorage.getItem('voidDiceSave');
+            if (saved) state = JSON.parse(saved);
+            syncDiceElements();
+            updateUI();
+        }
+
+        function format(num) {
+            if (num >= 1e9) return (num / 1e9).toFixed(2) + "B";
+            if (num >= 1e6) return (num / 1e6).toFixed(2) + "M";
+            if (num >= 1e3) return (num / 1e3).toFixed(1) + "k";
+            return Math.floor(num);
+        }
+
+        function syncDiceElements() {
+            const floor = document.getElementById('dice-floor');
+            floor.innerHTML = '';
+            for(let i=0; i<state.diceCount; i++) {
+                let d = document.createElement('div');
+                d.className = 'die';
+                d.innerText = '1';
+                floor.appendChild(d);
+            }
+        }
 
         function updateUI() {
-            document.getElementById('essence-count').innerText = Math.floor(state.essence).toLocaleString();
-            document.getElementById('auto-lvl').innerText = state.autoLvl;
-            document.getElementById('auto-cost').innerText = Math.floor(100 * Math.pow(1.15, state.autoLvl));
+            document.getElementById('essence-count').innerText = format(state.essence);
+            document.getElementById('auto-lvl').innerText = "Level " + state.autoLvl;
+            document.getElementById('speed-lvl').innerText = "x" + state.speedLvl.toFixed(1);
+            document.getElementById('dice-count-sub').innerText = state.diceCount + " Dice";
             
-            if (state.essence > 1000000 || state.shards > 0) {
-                document.getElementById('prestige-area').style.display = 'flex';
+            if (state.shards > 0) {
+                document.getElementById('shard-count').innerText = "SHARDS: " + state.shards + " (+" + (state.shards * 10) + "% Boost)";
             }
-            localStorage.setItem('voidDiceSave', JSON.stringify(state));
+
+            // Costs
+            const autoCost = 100 * Math.pow(1.15, state.autoLvl);
+            const speedCost = 1000 * Math.pow(3, state.speedLvl - 1);
+            const multiCost = 50000 * Math.pow(10, state.diceCount - 1);
+            
+            document.getElementById('btn-auto').innerText = "Cost: " + format(autoCost);
+            document.getElementById('btn-speed').innerText = "Cost: " + format(speedCost);
+            document.getElementById('btn-multi').innerText = "Cost: " + format(multiCost);
+
+            // Visibility
+            if (state.essence > 500 || state.speedLvl > 1) document.getElementById('row-speed').style.display = 'flex';
+            if (state.essence > 10000 || state.diceCount > 1) document.getElementById('row-multi').style.display = 'flex';
+            if (state.essence > 1e6 || state.shards > 0) {
+                document.getElementById('prestige-area').style.display = 'block';
+                let gain = Math.floor(Math.sqrt(state.essence / 1e6));
+                document.getElementById('prestige-gain').innerText = "+" + gain + " Potential Shards";
+            }
+
+            save();
         }
 
         function roll() {
-            let val = Math.floor(Math.random() * 6) + 1;
-            document.getElementById('die').innerText = val;
-            let gain = val * state.mult * (1 + (state.shards * 0.1));
-            state.essence += gain;
+            let total = 0;
+            const dice = document.querySelectorAll('.die');
+            dice.forEach(d => {
+                let v = Math.floor(Math.random() * 6) + 1;
+                d.innerText = v;
+                total += v;
+                d.style.transform = `rotate(${Math.random()*20-10}deg) scale(0.95)`;
+                setTimeout(() => d.style.transform = 'rotate(0) scale(1)', 100);
+            });
+
+            if (navigator.vibrate) navigator.vibrate(10);
+            state.essence += total * (1 + (state.shards * 0.1));
             updateUI();
         }
 
         function buyAuto() {
-            let cost = Math.floor(100 * Math.pow(1.15, state.autoLvl));
-            if (state.essence >= cost) {
-                state.essence -= cost;
-                state.autoLvl++;
-                updateUI();
+            let cost = 100 * Math.pow(1.15, state.autoLvl);
+            if (state.essence >= cost) { state.essence -= cost; state.autoLvl++; updateUI(); }
+        }
+
+        function buySpeed() {
+            let cost = 1000 * Math.pow(3, state.speedLvl - 1);
+            if (state.essence >= cost) { state.essence -= cost; state.speedLvl += 0.5; updateUI(); }
+        }
+
+        function buyExtraDie() {
+            let cost = 50000 * Math.pow(10, state.diceCount - 1);
+            if (state.essence >= cost && state.diceCount < 6) { 
+                state.essence -= cost; state.diceCount++; syncDiceElements(); updateUI(); 
             }
         }
 
         function transcend() {
-            let gained = Math.floor(Math.sqrt(state.essence / 1000000));
-            if (gained >= 1) {
-                state.shards += gained;
-                state.essence = 0;
-                state.autoLvl = 0;
-                state.mult = 1;
-                alert(`You gained ${gained} Shards!`);
-                updateUI();
+            let gain = Math.floor(Math.sqrt(state.essence / 1e6));
+            if (gain >= 1 && confirm("Transcend? You will lose Essence and Upgrades for Shards.")) {
+                state.shards += gain;
+                state.essence = 0; state.autoLvl = 0; state.speedLvl = 1; state.diceCount = 1;
+                syncDiceElements(); updateUI();
             }
         }
 
-        // Idle Loop
         setInterval(() => {
             if (state.autoLvl > 0) {
-                state.essence += (3.5 * state.autoLvl * state.mult * (1 + (state.shards * 0.1))) / 5;
+                let perTick = (3.5 * state.autoLvl * state.diceCount * (1 + (state.shards * 0.1))) / 10;
+                state.essence += perTick;
                 updateUI();
             }
-        }, 200);
+        }, 1000 / state.speedLvl);
 
-        updateUI();
+        load();
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
     </script>
 </body>
 </html>

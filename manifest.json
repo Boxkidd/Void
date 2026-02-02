@@ -1,14 +1,26 @@
 {
   "name": "Void Dice: Minimalist Idle",
   "short_name": "Void Dice",
-  "start_url": ".",
+  "description": "A sleek, minimalist idle dice game.",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#050505",
   "theme_color": "#00f2ff",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "https://raw.githubusercontent.com/google/material-design-icons/master/png/action/settings_input_component/black/48dp/2x/outline_settings_input_component_black_48dp.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "https://raw.githubusercontent.com/google/material-design-icons/master/png/action/settings_input_component/black/48dp/2x/outline_settings_input_component_black_48dp.png",
       "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://raw.githubusercontent.com/google/material-design-icons/master/png/action/settings_input_component/black/48dp/2x/outline_settings_input_component_black_48dp.png",
+      "sizes": "512x512",
       "type": "image/png"
     }
   ]
