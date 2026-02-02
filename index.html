@@ -55,6 +55,19 @@
         /* Themes */
         #theme-picker { display: flex; gap: 15px; margin-top: 15px; justify-content: center; display: none; }
         .swatch { width: 18px; height: 18px; border-radius: 50%; cursor: pointer; border: 1px solid #333; }
+        
+        #milestone-bar {
+        width: 90%; height: 4px; background: #222; margin: 15px 0; border-radius: 2px;
+        }
+        #milestone-progress {
+        height: 100%; background: var(--cyan); width: 0%; 
+        box-shadow: 0 0 10px var(--cyan); transition: width 0.4s ease;
+        }
+        .buy-max-btn {
+        font-size: 0.6rem; color: var(--gray); border: 1px solid var(--gray);
+        padding: 2px 10px; border-radius: 10px; cursor: pointer; transition: 0.2s;
+        }
+        .buy-max-active { color: var(--cyan); border-color: var(--cyan); background: rgba(0,242,255,0.1); }
     </style>
 </head>
 <body>
@@ -76,6 +89,11 @@
     <div id="dice-floor" onclick="roll()"></div>
     
     <button class="btn" style="padding: 15px 50px; font-size: 1.1rem;" onclick="roll()">ROLL</button>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 10px;">
+    <div id="milestone-bar"><div id="milestone-progress"></div></div>
+    <div id="buy-max-btn" class="buy-max-btn" onclick="toggleBuyMax()">MAX</div>
+    </div>
 
     <div class="panel">
         <div class="row">
@@ -214,7 +232,22 @@
             }
         }, 1000 / state.speedLvl);
 
+        let buyMaxMode = false;
+
+        function toggleBuyMax() {
+        buyMaxMode = !buyMaxMode;
+        document.getElementById('buy-max-btn').classList.toggle('buy-max-active');
+}
+
         syncDice(); updateUI();
+
+        // Soft Save: Saves the game automatically when the user minimizes the browser
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === 'hidden') {
+        save();
+        console.log("Void secured: Auto-save complete.");
+    }
+});
     </script>
 </body>
 </html>
