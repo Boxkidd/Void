@@ -7,215 +7,214 @@
     <title>Void Dice</title>
     <style>
         :root { --cyan: #00f2ff; --onyx: #050505; --purple: #bc13fe; --gray: #444; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         body { 
             background-color: var(--onyx); color: white; margin: 0; 
             font-family: 'Courier New', Courier, monospace; overflow: hidden;
             display: flex; flex-direction: column; align-items: center; height: 100vh;
+            transition: box-shadow 0.3s ease;
         }
-        #essence-container { margin-top: 5vh; text-align: center; }
-        #essence-count { font-size: 3.5rem; color: var(--cyan); text-shadow: 0 0 15px rgba(0,242,255,0.4); font-weight: bold; }
+        
+        /* UI Layout */
+        #top-nav { margin-top: 5vh; text-align: center; width: 100%; }
+        #essence-count { font-size: 3.5rem; color: var(--cyan); text-shadow: 0 0 15px var(--cyan); font-weight: bold; }
         
         #dice-floor { 
-            display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; 
-            min-height: 150px; margin: 40px 0; width: 90%; 
+            display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; 
+            min-height: 140px; margin: 30px 0; width: 90%; cursor: pointer;
         }
         .die {
-            width: 80px; height: 80px; border: 2px solid var(--cyan);
+            width: 75px; height: 75px; border: 2px solid var(--cyan);
             display: flex; align-items: center; justify-content: center;
-            font-size: 2.5rem; border-radius: 12px; background: black;
-            box-shadow: 0 0 10px rgba(0,242,255,0.2); transition: transform 0.1s;
+            font-size: 2.2rem; border-radius: 12px; background: black;
+            box-shadow: 0 0 10px rgba(0,242,255,0.1); transition: 0.1s;
         }
 
-        .btn-main {
-            background: var(--cyan); color: black; border: none; padding: 18px 60px;
-            font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 1.2rem;
-            box-shadow: 0 0 20px rgba(0,242,255,0.3);
+        /* Upgrades & Lab */
+        .panel { 
+            width: 95%; max-width: 420px; background: #0f0f0f; padding: 20px; 
+            border-radius: 15px; border-top: 1px solid #222; margin-top: auto; margin-bottom: 15px;
         }
-        .btn-main:active { transform: scale(0.95); }
+        .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .info { display: flex; flex-direction: column; }
+        .title { font-size: 0.85rem; font-weight: bold; }
+        .sub { font-size: 0.7rem; color: var(--gray); }
+        .btn { 
+            color: var(--cyan); border: 1px solid var(--cyan); padding: 6px 14px; 
+            border-radius: 6px; font-size: 0.8rem; cursor: pointer; background: transparent;
+        }
+        .btn:active { background: var(--cyan); color: black; }
 
-        .shop { 
-            width: 95%; max-width: 400px; margin-top: auto; margin-bottom: 20px; 
-            background: #0f0f0f; padding: 20px; border-radius: 15px;
-            border-top: 1px solid #222;
+        /* Abilities */
+        #overclock-btn {
+            background: white; color: black; border: none; padding: 8px 20px;
+            border-radius: 20px; font-weight: bold; font-size: 0.7rem;
+            position: absolute; top: 20px; right: 20px; cursor: pointer; display: none;
         }
-        .shop-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .item-info { display: flex; flex-direction: column; }
-        .item-title { font-size: 0.9rem; font-weight: bold; }
-        .item-sub { font-size: 0.7rem; color: var(--gray); }
-        .upgrade-btn { 
-            color: var(--cyan); border: 1px solid var(--cyan); padding: 5px 12px; 
-            border-radius: 4px; font-size: 0.8rem; cursor: pointer;
-        }
-        .upgrade-btn.locked { color: var(--gray); border-color: var(--gray); opacity: 0.5; }
-        
-        #prestige-area { 
-            border-top: 1px solid #330033; padding-top: 15px; margin-top: 10px;
-        }
+
+        /* Themes */
+        #theme-picker { display: flex; gap: 15px; margin-top: 15px; justify-content: center; display: none; }
+        .swatch { width: 18px; height: 18px; border-radius: 50%; cursor: pointer; border: 1px solid #333; }
     </style>
 </head>
 <body>
 
-    <div id="essence-container">
-        <div style="letter-spacing: 5px; color: var(--gray); font-size: 0.8rem;">VOID ESSENCE</div>
+    <button id="overclock-btn" onclick="activateOverclock()">OVERCLOCK</button>
+
+    <div id="top-nav">
+        <div style="letter-spacing: 4px; color: var(--gray); font-size: 0.7rem;">VOID ESSENCE</div>
         <div id="essence-count">0</div>
-        <div id="shard-count" style="color: var(--purple); font-size: 0.8rem; margin-top: 5px;"></div>
+        <div id="shard-count" style="color: var(--purple); font-size: 0.7rem; margin-top: 4px;"></div>
+        <div id="theme-picker">
+            <div class="swatch" style="background:#00f2ff" onclick="changeTheme('#00f2ff')"></div>
+            <div class="swatch" style="background:#39ff14" onclick="changeTheme('#39ff14')"></div>
+            <div class="swatch" style="background:#ff0044" onclick="changeTheme('#ff0044')"></div>
+            <div class="swatch" style="background:#bc13fe" onclick="changeTheme('#bc13fe')"></div>
+        </div>
     </div>
 
-    <div id="dice-floor" onclick="roll()">
-        <div class="die">1</div>
-    </div>
+    <div id="dice-floor" onclick="roll()"></div>
     
-    <button class="btn-main" onclick="roll()">ROLL</button>
+    <button class="btn" style="padding: 15px 50px; font-size: 1.1rem;" onclick="roll()">ROLL</button>
 
-    <div class="shop">
-        <div class="shop-item">
-            <div class="item-info">
-                <span class="item-title">Auto-Roller</span>
-                <span class="item-sub" id="auto-lvl">Level 0</span>
-            </div>
-            <div class="upgrade-btn" id="btn-auto" onclick="buyAuto()">Cost: 100</div>
+    <div class="panel">
+        <div class="row">
+            <div class="info"><span class="title">Auto-Roller</span><span class="sub" id="auto-lvl">Lvl 0</span></div>
+            <button class="btn" id="cost-auto" onclick="buyAuto()">100</button>
         </div>
-
-        <div class="shop-item" id="row-speed" style="display:none;">
-            <div class="item-info">
-                <span class="item-title">Turbo Speed</span>
-                <span class="item-sub" id="speed-lvl">x1.0</span>
-            </div>
-            <div class="upgrade-btn" id="btn-speed" onclick="buySpeed()">Cost: 1.0k</div>
+        <div class="row" id="row-speed" style="display:none;">
+            <div class="info"><span class="title">Turbo Speed</span><span class="sub" id="speed-lvl">x1.0</span></div>
+            <button class="btn" id="cost-speed" onclick="buySpeed()">1.0k</button>
         </div>
-
-        <div class="shop-item" id="row-multi" style="display:none;">
-            <div class="item-info">
-                <span class="item-title">Extra Die</span>
-                <span class="item-sub" id="dice-count-sub">1 Die</span>
-            </div>
-            <div class="upgrade-btn" id="btn-multi" onclick="buyExtraDie()">Cost: 50k</div>
+        <div class="row" id="row-multi" style="display:none;">
+            <div class="info"><span class="title">Extra Die</span><span class="sub" id="dice-sub">1 Die</span></div>
+            <button class="btn" id="cost-multi" onclick="buyMulti()">50k</button>
         </div>
-
-        <div id="prestige-area" style="display:none;">
-            <div class="shop-item">
-                <div class="item-info">
-                    <span class="item-title" style="color:var(--purple)">TRANSCEND</span>
-                    <span class="item-sub" id="prestige-gain">+0 Shards</span>
-                </div>
-                <div class="upgrade-btn" style="color:var(--purple); border-color:var(--purple)" onclick="transcend()">ASCEND</div>
+        <div class="row" id="row-lab" style="display:none; border-top: 1px solid #222; padding-top: 12px;">
+            <div class="info"><span class="title" style="color:#f0f">Lab: Exploding 6s</span><span class="sub">6s roll again</span></div>
+            <button class="btn" id="cost-lab" onclick="buyLab()">250k</button>
+        </div>
+        <div id="prestige-area" style="display:none; border-top: 1px solid #330033; padding-top: 12px;">
+            <div class="row">
+                <div class="info"><span class="title" style="color:var(--purple)">TRANSCEND</span><span class="sub" id="prestige-gain">+0 Shards</span></div>
+                <button class="btn" style="color:var(--purple); border-color:var(--purple)" onclick="transcend()">ASCEND</button>
             </div>
         </div>
     </div>
 
     <script>
-        let state = { essence: 0, autoLvl: 0, speedLvl: 1, diceCount: 1, shards: 0 };
+        let state = { 
+            essence: 0, autoLvl: 0, speedLvl: 1, diceCount: 1, 
+            shards: 0, hasLab: false, themeColor: '#00f2ff',
+            lastSave: Date.now()
+        };
 
-        function save() { localStorage.setItem('voidDiceSave', JSON.stringify(state)); }
-        function load() {
-            const saved = localStorage.getItem('voidDiceSave');
-            if (saved) state = JSON.parse(saved);
-            syncDiceElements();
-            updateUI();
+        function format(n) {
+            if (n >= 1e9) return (n/1e9).toFixed(2) + "B";
+            if (n >= 1e6) return (n/1e6).toFixed(2) + "M";
+            if (n >= 1e3) return (n/1e3).toFixed(1) + "k";
+            return Math.floor(n);
         }
 
-        function format(num) {
-            if (num >= 1e9) return (num / 1e9).toFixed(2) + "B";
-            if (num >= 1e6) return (num / 1e6).toFixed(2) + "M";
-            if (num >= 1e3) return (num / 1e3).toFixed(1) + "k";
-            return Math.floor(num);
-        }
-
-        function syncDiceElements() {
+        function syncDice() {
             const floor = document.getElementById('dice-floor');
             floor.innerHTML = '';
             for(let i=0; i<state.diceCount; i++) {
                 let d = document.createElement('div');
-                d.className = 'die';
-                d.innerText = '1';
+                d.className = 'die'; d.innerText = '1';
                 floor.appendChild(d);
             }
         }
 
         function updateUI() {
             document.getElementById('essence-count').innerText = format(state.essence);
-            document.getElementById('auto-lvl').innerText = "Level " + state.autoLvl;
+            document.getElementById('auto-lvl').innerText = "Lvl " + state.autoLvl;
             document.getElementById('speed-lvl').innerText = "x" + state.speedLvl.toFixed(1);
-            document.getElementById('dice-count-sub').innerText = state.diceCount + " Dice";
+            document.getElementById('dice-sub').innerText = state.diceCount + " Dice";
             
-            if (state.shards > 0) {
-                document.getElementById('shard-count').innerText = "SHARDS: " + state.shards + " (+" + (state.shards * 10) + "% Boost)";
-            }
-
-            // Costs
-            const autoCost = 100 * Math.pow(1.15, state.autoLvl);
-            const speedCost = 1000 * Math.pow(3, state.speedLvl - 1);
-            const multiCost = 50000 * Math.pow(10, state.diceCount - 1);
+            if (state.shards > 0) document.getElementById('shard-count').innerText = `SHARDS: ${state.shards} (+${state.shards * 10}% Power)`;
             
-            document.getElementById('btn-auto').innerText = "Cost: " + format(autoCost);
-            document.getElementById('btn-speed').innerText = "Cost: " + format(speedCost);
-            document.getElementById('btn-multi').innerText = "Cost: " + format(multiCost);
+            document.getElementById('cost-auto').innerText = format(100 * Math.pow(1.15, state.autoLvl));
+            document.getElementById('cost-speed').innerText = format(1000 * Math.pow(3, state.speedLvl - 1));
+            document.getElementById('cost-multi').innerText = format(50000 * Math.pow(10, state.diceCount - 1));
 
-            // Visibility
             if (state.essence > 500 || state.speedLvl > 1) document.getElementById('row-speed').style.display = 'flex';
             if (state.essence > 10000 || state.diceCount > 1) document.getElementById('row-multi').style.display = 'flex';
+            if (state.essence > 100000 || state.hasLab) document.getElementById('row-lab').style.display = 'flex';
+            if (state.hasLab) { document.getElementById('cost-lab').innerText = "OWNED"; document.getElementById('cost-lab').style.opacity = 0.5; }
+            if (state.essence > 100000) document.getElementById('theme-picker').style.display = 'flex';
+            
             if (state.essence > 1e6 || state.shards > 0) {
                 document.getElementById('prestige-area').style.display = 'block';
                 let gain = Math.floor(Math.sqrt(state.essence / 1e6));
                 document.getElementById('prestige-gain').innerText = "+" + gain + " Potential Shards";
             }
-
-            save();
+            if (state.autoLvl >= 5) document.getElementById('overclock-btn').style.display = 'block';
+            
+            document.documentElement.style.setProperty('--cyan', state.themeColor);
+            state.lastSave = Date.now();
+            localStorage.setItem('voidDiceSave', JSON.stringify(state));
         }
 
         function roll() {
             let total = 0;
-            const dice = document.querySelectorAll('.die');
-            dice.forEach(d => {
+            document.querySelectorAll('.die').forEach(d => {
                 let v = Math.floor(Math.random() * 6) + 1;
-                d.innerText = v;
-                total += v;
-                d.style.transform = `rotate(${Math.random()*20-10}deg) scale(0.95)`;
-                setTimeout(() => d.style.transform = 'rotate(0) scale(1)', 100);
+                if (v === 6 && state.hasLab) v += (Math.floor(Math.random() * 6) + 1);
+                d.innerText = v; total += v;
+                d.style.transform = `rotate(${Math.random()*20-10}deg) scale(0.9)`;
+                setTimeout(() => d.style.transform = 'rotate(0) scale(1)', 80);
             });
-
             if (navigator.vibrate) navigator.vibrate(10);
             state.essence += total * (1 + (state.shards * 0.1));
             updateUI();
         }
 
-        function buyAuto() {
-            let cost = 100 * Math.pow(1.15, state.autoLvl);
-            if (state.essence >= cost) { state.essence -= cost; state.autoLvl++; updateUI(); }
-        }
+        function buyAuto() { let c = 100*Math.pow(1.15, state.autoLvl); if(state.essence>=c){ state.essence-=c; state.autoLvl++; updateUI(); }}
+        function buySpeed() { let c = 1000*Math.pow(3, state.speedLvl-1); if(state.essence>=c){ state.essence-=c; state.speedLvl+=0.5; updateUI(); }}
+        function buyMulti() { let c = 50000*Math.pow(10, state.diceCount-1); if(state.essence>=c && state.diceCount<6){ state.essence-=c; state.diceCount++; syncDice(); updateUI(); }}
+        function buyLab() { if(state.essence>=250000 && !state.hasLab){ state.essence-=250000; state.hasLab=true; updateUI(); }}
+        
+        function changeTheme(c) { state.themeColor = c; updateUI(); }
 
-        function buySpeed() {
-            let cost = 1000 * Math.pow(3, state.speedLvl - 1);
-            if (state.essence >= cost) { state.essence -= cost; state.speedLvl += 0.5; updateUI(); }
-        }
-
-        function buyExtraDie() {
-            let cost = 50000 * Math.pow(10, state.diceCount - 1);
-            if (state.essence >= cost && state.diceCount < 6) { 
-                state.essence -= cost; state.diceCount++; syncDiceElements(); updateUI(); 
-            }
+        function activateOverclock() {
+            document.getElementById('overclock-btn').style.display = 'none';
+            let oldSpeed = state.speedLvl; state.speedLvl *= 4;
+            document.body.style.boxShadow = "inset 0 0 50px var(--cyan)";
+            setTimeout(() => { 
+                state.speedLvl = oldSpeed; document.body.style.boxShadow = "none"; 
+                setTimeout(() => { document.getElementById('overclock-btn').style.display = 'block'; }, 30000);
+            }, 10000);
         }
 
         function transcend() {
             let gain = Math.floor(Math.sqrt(state.essence / 1e6));
-            if (gain >= 1 && confirm("Transcend? You will lose Essence and Upgrades for Shards.")) {
-                state.shards += gain;
-                state.essence = 0; state.autoLvl = 0; state.speedLvl = 1; state.diceCount = 1;
-                syncDiceElements(); updateUI();
+            if (gain >= 1 && confirm("Reset all progress for " + gain + " Shards?")) {
+                state.shards += gain; state.essence = 0; state.autoLvl = 0; state.speedLvl = 1; state.diceCount = 1; state.hasLab = false;
+                syncDice(); updateUI();
+            }
+        }
+
+        // Offline and Loop
+        const saved = localStorage.getItem('voidDiceSave');
+        if (saved) {
+            state = JSON.parse(saved);
+            let offTime = (Date.now() - state.lastSave) / 1000;
+            if (offTime > 60 && state.autoLvl > 0) {
+                let gain = (3.5 * state.autoLvl * state.diceCount * (1 + (state.shards * 0.1)) * offTime) / 2;
+                state.essence += gain;
+                alert("While you were in the void, you gathered " + format(gain) + " Essence.");
             }
         }
 
         setInterval(() => {
             if (state.autoLvl > 0) {
-                let perTick = (3.5 * state.autoLvl * state.diceCount * (1 + (state.shards * 0.1))) / 10;
-                state.essence += perTick;
+                state.essence += (3.5 * state.autoLvl * state.diceCount * (1 + (state.shards * 0.1))) / 10;
                 updateUI();
             }
         }, 1000 / state.speedLvl);
 
-        load();
-        if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+        syncDice(); updateUI();
     </script>
 </body>
 </html>
