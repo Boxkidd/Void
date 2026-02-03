@@ -3,233 +3,260 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <link rel="manifest" href="manifest.json">
     <title>Void Dice: Singularity</title>
     <style>
         :root { 
             --cyan: #00f2ff; --onyx: #050505; --purple: #bc13fe; 
-            --gray: #444; --gold: #ffd700; --red: #ff4444;
+            --gray: #111; --text-gray: #555; --gold: #ffd700; --red: #ff4444;
+            --orange: #ff8c00;
+            --active-color: var(--cyan);
             --safe-top: env(safe-area-inset-top);
             --safe-bottom: env(safe-area-inset-bottom);
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         body { 
             background-color: var(--onyx); color: white; margin: 0; 
-            font-family: 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Inter', system-ui, sans-serif;
             overflow: hidden; display: flex; flex-direction: column; 
             height: 100vh; height: -webkit-fill-available;
         }
-        #void-bg {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 100vmax; height: 100vmax; background: radial-gradient(circle, var(--cyan) 0%, transparent 70%);
-            filter: blur(80px); z-index: -1; opacity: 0; transition: opacity 2s;
-        }
-        #top-nav { padding-top: calc(var(--safe-top) + 20px); text-align: center; width: 100%; flex: 0 1 auto; }
-        #essence-count { font-size: clamp(2.5rem, 10vw, 4.5rem); color: var(--cyan); text-shadow: 0 0 20px var(--cyan); font-weight: 900; }
-        #milestone-container { width: 85%; max-width: 500px; margin: 10px auto; }
-        #milestone-bar { width: 100%; height: 6px; background: #1a1a1a; border-radius: 3px; overflow: hidden; }
-        #milestone-progress { height: 100%; background: var(--cyan); width: 0%; transition: width 0.4s; }
+
+        /* Top Navigation */
+        #top-nav { padding-top: calc(var(--safe-top) + 10px); text-align: center; width: 100%; flex: 0 1 auto; }
+        #essence-count { font-size: clamp(2.2rem, 8vw, 3.5rem); color: var(--active-color); text-shadow: 0 0 20px var(--active-color); font-weight: 900; transition: 0.3s; }
+        #shard-display { font-size: 0.8rem; color: var(--purple); font-weight: bold; letter-spacing: 2px; margin-top: 5px; }
+        
+        /* Tabs */
+        .tab-container { display: flex; justify-content: center; gap: 20px; margin: 10px 0; }
+        .tab { font-size: 0.7rem; color: var(--text-gray); cursor: pointer; letter-spacing: 2px; font-weight: bold; padding: 5px 10px; border-bottom: 2px solid transparent; }
+        .tab.active { color: white; border-bottom-color: var(--active-color); }
+
+        /* Game Area */
         #game-area { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; }
         #dice-floor { 
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
-            gap: 15px; width: 90%; max-width: 400px; justify-items: center; margin: 20px 0;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(65px, 1fr));
+            gap: 12px; width: 90%; max-width: 380px; justify-items: center; margin: 15px 0;
         }
         .die { 
-            width: clamp(65px, 18vw, 90px); height: clamp(65px, 18vw, 90px); 
-            border: 2px solid var(--cyan); display: flex; align-items: center; 
-            justify-content: center; font-size: 2.2rem; border-radius: 14px; 
-            background: black; box-shadow: 0 0 15px rgba(0,242,255,0.2); transition: 0.1s;
+            width: 70px; height: 70px; border: 2px solid var(--active-color); 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 1.6rem; border-radius: 12px; background: #000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
         }
-        .die.crit { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 25px var(--gold); transform: scale(1.1); }
+        .die.rolling { transform: scale(1.2) rotate(15deg); filter: brightness(1.5); }
+        .die.crit { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 20px var(--gold); }
+        .die-label { position: absolute; bottom: -18px; font-size: 0.5rem; color: var(--text-gray); }
+
+        /* Panel System */
         .panel { 
-            width: 100%; max-width: 600px; background: rgba(10, 10, 10, 0.96); 
-            padding: 20px; padding-bottom: calc(var(--safe-bottom) + 20px);
-            border-radius: 35px 35px 0 0; border-top: 1px solid #333; 
-            backdrop-filter: blur(25px); align-self: center;
+            width: 100%; max-width: 500px; background: rgba(8, 8, 8, 0.98); 
+            padding: 20px; padding-bottom: calc(var(--safe-bottom) + 15px);
+            border-radius: 30px 30px 0 0; border-top: 1px solid #222; align-self: center;
+            height: 45vh; overflow-y: auto;
         }
-        .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 12px; border-radius: 12px; background: #0c0c0c; }
+        .row.locked { opacity: 0.3; filter: grayscale(1); }
+        .info span { font-size: 0.85rem; font-weight: 600; color: #eee; }
+        .info small { color: var(--text-gray); font-size: 0.65rem; }
+
         .btn { 
-            color: var(--cyan); border: 1px solid var(--cyan); padding: 12px 20px; 
-            border-radius: 12px; font-size: 0.9rem; cursor: pointer; background: transparent;
-            font-weight: bold; transition: 0.2s;
+            color: var(--active-color); border: 1px solid var(--active-color); padding: 8px 12px; 
+            border-radius: 8px; font-size: 0.75rem; cursor: pointer; background: transparent;
+            font-weight: bold; min-width: 80px; transition: 0.2s;
         }
-        .btn:active { transform: scale(0.92); background: var(--cyan); color: black; }
-        .buy-max-btn { font-size: 0.7rem; color: var(--gray); border: 1px solid var(--gray); padding: 5px 14px; border-radius: 20px; cursor: pointer; }
-        .buy-max-active { color: var(--cyan); border-color: var(--cyan); background: rgba(0,242,255,0.1); }
-        .crit-text { position: absolute; color: var(--gold); font-weight: 900; animation: floatText 0.6s forwards; pointer-events: none; z-index: 10; }
-        @keyframes floatText { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: translateY(-80px) scale(1.6); } }
+        .btn.too-expensive { color: #333 !important; border-color: #333 !important; cursor: not-allowed; }
+        
+        .shard-btn { color: var(--purple); border-color: var(--purple); }
+
+        @keyframes critPop { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 0; transform: translateY(-40px); } }
+        .crit-text { position: absolute; color: var(--gold); font-weight: 900; animation: critPop 0.6s forwards; z-index: 10; pointer-events: none; }
     </style>
 </head>
 <body>
-    <div id="void-bg"></div>
     <div id="top-nav">
-        <div style="letter-spacing: 5px; color: var(--gray); font-size: 0.75rem; font-weight: bold;">VOID SINGULARITY</div>
         <div id="essence-count">0</div>
-        <div id="milestone-container">
-            <div id="milestone-bar"><div id="milestone-progress"></div></div>
-            <div id="milestone-label" style="font-size: 0.65rem; color: var(--gray); margin-top: 10px; letter-spacing: 1px;">0% TO TRANSCENDENCE</div>
+        <div id="shard-display">0 SHARDS</div>
+        <div class="tab-container">
+            <div class="tab active" onclick="switchTab('upgrades')">UPGRADES</div>
+            <div class="tab" onclick="switchTab('void')">VOID STORE</div>
         </div>
     </div>
+
     <div id="game-area">
         <div id="dice-floor" onclick="roll()"></div>
-        <div style="display: flex; gap: 20px; margin-top: 30px;">
-            <button id="oc-btn" class="btn" style="display:none; border-color: var(--red); color: var(--red);" onclick="activateOverclock()">OVERCLOCK</button>
-            <button class="btn" style="padding: 18px 60px; font-size: 1.2rem; border-radius: 40px; border-width: 2px;" onclick="roll()">ROLL</button>
+        <button class="btn" style="padding: 12px 30px; border-radius: 20px; margin-top:10px;" onclick="roll()">MANUAL ROLL</button>
+    </div>
+
+    <div class="panel" id="panel-upgrades">
+        <div class="row" id="row-auto">
+            <div class="info"><span>Neural Auto-Link</span><br><small id="auto-lvl">Lvl 0</small></div>
+            <button class="btn" id="cost-auto" onclick="buy('auto')">100</button>
+        </div>
+        <div class="row" id="row-speed">
+            <div class="info"><span>Clock Speed</span><br><small id="speed-lvl">x1.0</small></div>
+            <button class="btn" id="cost-speed" onclick="buy('speed')">1.5k</button>
+        </div>
+        <div class="row" id="row-dice">
+            <div class="info"><span>Summon Dice</span><br><small id="dice-lvl">1 Die</small></div>
+            <button class="btn" id="cost-dice" onclick="buy('dice')">25k</button>
+        </div>
+        <div class="row" id="row-evolve">
+            <div class="info"><span>Dice Evolution</span><br><small id="evolve-lvl">Class: D6</small></div>
+            <button class="btn" id="cost-evolve" onclick="buy('evolve')">1M</button>
+        </div>
+        <div id="prestige-area" style="display:none; margin-top:15px;">
+            <div class="row" style="border:1px solid var(--purple)">
+                <div class="info"><span style="color:var(--purple)">TRANSCEND</span><br><small id="shard-gain">+0 Shards</small></div>
+                <button class="btn shard-btn" onclick="transcend()">ASCEND</button>
+            </div>
         </div>
     </div>
-    <div class="panel">
+
+    <div class="panel" id="panel-void" style="display:none;">
         <div class="row">
-            <span style="font-size: 0.75rem; color: var(--gray); letter-spacing: 2px; font-weight: 900;">NEURAL UPGRADES</span>
-            <div id="buy-max-btn" class="buy-max-btn" onclick="toggleBuyMax()">BUY: 1X</div>
+            <div class="info"><span>Molten Skin</span><br><small>Orange Glow • +2x Crit</small></div>
+            <button class="btn shard-btn" id="skin-molten" onclick="buySkin('molten', 5)">5 SHARDS</button>
         </div>
         <div class="row">
-            <div class="info"><span>Auto-Roller</span><br><span id="auto-lvl" style="font-size:0.75rem; color:var(--gray)">Lvl 0</span></div>
-            <button class="btn" id="cost-auto" onclick="attemptBuy('auto')">100</button>
+            <div class="info"><span>Ghostly Skin</span><br><small>Purple Pulse • +20% Speed</small></div>
+            <button class="btn shard-btn" id="skin-ghostly" onclick="buySkin('ghostly', 15)">15 SHARDS</button>
         </div>
-        <div class="row" id="row-speed" style="display:none;">
-            <div class="info"><span>Clock Speed</span><br><span id="speed-lvl" style="font-size:0.75rem; color:var(--gray)">x1.0</span></div>
-            <button class="btn" id="cost-speed" onclick="attemptBuy('speed')">1.0k</button>
-        </div>
-        <div class="row" id="row-dice" style="display:none;">
-            <div class="info"><span>Dice Count</span><br><span id="dice-lvl" style="font-size:0.75rem; color:var(--gray)">1 Die</span></div>
-            <button class="btn" id="cost-dice" onclick="attemptBuy('dice')">25k</button>
-        </div>
-        <div id="prestige-area" style="display:none; border-top: 1px solid #333; padding-top: 20px;">
-            <div class="row">
-                <div class="info"><span style="color:var(--purple); font-weight: 900;">TRANSCEND</span><br><span id="prestige-gain" style="font-size:0.75rem; color:var(--purple)">+0 Shards</span></div>
-                <button class="btn" style="color:var(--purple); border-color:var(--purple)" onclick="transcend()">ASCEND</button>
-            </div>
+        <div class="row">
+            <div class="info"><span>Void Battery</span><br><small>Permanent 2x Essence</small></div>
+            <button class="btn shard-btn" id="art-battery" onclick="buySkin('battery', 50)">50 SHARDS</button>
         </div>
     </div>
 
     <script>
         let state = { 
-            essence: 0, autoLvl: 0, speedLvl: 1, diceCount: 1, 
-            shards: 0, lastSave: Date.now() 
+            essence: 0, autoLvl: 0, speedLvl: 1, diceCount: 1, evolveLvl: 0,
+            shards: 0, skin: 'cyan', ownedSkins: ['cyan'], battery: 1
         };
-        let buyMaxMode = false;
-        let isOverclocked = false;
+        
+        const DICE_TYPES = [
+            { name: 'D6', sides: 6, cost: 1e6 },
+            { name: 'D12', sides: 12, cost: 50e6 },
+            { name: 'D20', sides: 20, cost: 1e9 },
+            { name: 'D100', sides: 100, cost: Infinity }
+        ];
 
         const CONFIG = {
-            auto: { base: 100, grow: 1.15 },
-            speed: { base: 1000, grow: 2.2 },
-            dice: { base: 25000, grow: 18.0 }
+            auto: { base: 100, grow: 1.2 },
+            speed: { base: 1500, grow: 2.5 },
+            dice: { base: 25000, grow: 20.0 }
         };
 
         function format(n) {
-            if (n >= 1e15) return (n/1e15).toFixed(2) + "Q";
             if (n >= 1e12) return (n/1e12).toFixed(2) + "T";
             if (n >= 1e9) return (n/1e9).toFixed(2) + "B";
-            if (n >= 1e6) return (n/1e6).toFixed(2) + "M";
+            if (n >= 1e6) return (n/1e6).toFixed(1) + "M";
             if (n >= 1e3) return (n/1e3).toFixed(1) + "k";
             return Math.floor(n);
         }
 
-        function toggleBuyMax() {
-            buyMaxMode = !buyMaxMode;
-            document.getElementById('buy-max-btn').innerText = buyMaxMode ? "BUY: MAX" : "BUY: 1X";
-            document.getElementById('buy-max-btn').classList.toggle('buy-max-active');
+        function switchTab(tab) {
+            document.getElementById('panel-upgrades').style.display = tab === 'upgrades' ? 'block' : 'none';
+            document.getElementById('panel-void').style.display = tab === 'void' ? 'block' : 'none';
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
         }
 
-        function attemptBuy(type) {
-            const conf = CONFIG[type];
-            let cur = (type === 'auto') ? state.autoLvl : (type === 'speed') ? Math.round((state.speedLvl - 1) * 2) : (state.diceCount - 1);
-            if (buyMaxMode) {
-                while (state.essence >= conf.base * Math.pow(conf.grow, cur)) {
-                    state.essence -= conf.base * Math.pow(conf.grow, cur);
-                    cur++;
-                    if (type === 'auto') state.autoLvl++;
-                    else if (type === 'speed') state.speedLvl += 0.5;
-                    else if (type === 'dice' && state.diceCount < 6) state.diceCount++;
-                }
+        function buy(type) {
+            if (type === 'evolve') {
+                let cost = DICE_TYPES[state.evolveLvl].cost;
+                if (state.essence >= cost) { state.essence -= cost; state.evolveLvl++; }
             } else {
-                let cost = conf.base * Math.pow(conf.grow, cur);
+                let cur = (type === 'auto') ? state.autoLvl : (type === 'speed') ? Math.round((state.speedLvl - 1) * 2) : (state.diceCount - 1);
+                let cost = CONFIG[type].base * Math.pow(CONFIG[type].grow, cur);
                 if (state.essence >= cost) {
                     state.essence -= cost;
                     if (type === 'auto') state.autoLvl++;
-                    else if (type === 'speed') state.speedLvl += 0.5;
-                    else if (type === 'dice' && state.diceCount < 6) state.diceCount++;
+                    if (type === 'speed') state.speedLvl += 0.5;
+                    if (type === 'dice' && state.diceCount < 8) state.diceCount++;
                 }
             }
             updateUI();
+        }
+
+        function buySkin(name, cost) {
+            if (state.shards >= cost && !state.ownedSkins.includes(name)) {
+                state.shards -= cost;
+                state.ownedSkins.push(name);
+                if (name === 'battery') state.battery = 2;
+                else state.skin = name;
+                updateUI();
+            } else if (state.ownedSkins.includes(name)) {
+                state.skin = name;
+                updateUI();
+            }
         }
 
         function updateUI() {
             document.getElementById('essence-count').innerText = format(state.essence);
-            document.getElementById('auto-lvl').innerText = "Lvl " + state.autoLvl;
-            document.getElementById('speed-lvl').innerText = "x" + state.speedLvl.toFixed(1);
-            document.getElementById('dice-lvl').innerText = state.diceCount + " Dice";
+            document.getElementById('shard-display').innerText = state.shards + " SHARDS";
+            
+            // Themes
+            let colors = { cyan: '#00f2ff', molten: '#ff8c00', ghostly: '#bc13fe' };
+            document.documentElement.style.setProperty('--active-color', colors[state.skin] || colors.cyan);
+
+            // Button locking/labels
+            document.getElementById('auto-lvl').innerText = 'Lvl ' + state.autoLvl;
             document.getElementById('cost-auto').innerText = format(CONFIG.auto.base * Math.pow(CONFIG.auto.grow, state.autoLvl));
-            document.getElementById('cost-speed').innerText = format(CONFIG.speed.base * Math.pow(CONFIG.speed.grow, Math.round((state.speedLvl - 1) * 2)));
-            document.getElementById('cost-dice').innerText = (state.diceCount < 6) ? format(CONFIG.dice.base * Math.pow(CONFIG.dice.grow, state.diceCount - 1)) : "MAX";
-            let prog = Math.min((state.essence / 1e6) * 100, 100);
-            document.getElementById('milestone-progress').style.width = prog + "%";
-            document.getElementById('milestone-label').innerText = Math.floor(prog) + "% TO TRANSCENDENCE";
-            if(state.essence > 500 || state.speedLvl > 1) document.getElementById('row-speed').style.display = 'flex';
-            if(state.essence > 15000 || state.diceCount > 1) document.getElementById('row-dice').style.display = 'flex';
-            if(state.essence > 1e6 || state.shards > 0) {
+            
+            let evCost = DICE_TYPES[state.evolveLvl].cost;
+            document.getElementById('cost-evolve').innerText = format(evCost);
+            document.getElementById('evolve-lvl').innerText = 'Class: ' + DICE_TYPES[state.evolveLvl].name;
+
+            if (state.essence >= 1e6 || state.shards > 0) {
                 document.getElementById('prestige-area').style.display = 'block';
-                document.getElementById('prestige-gain').innerText = "+" + Math.floor(Math.sqrt(state.essence/1e6)) + " Shards";
+                document.getElementById('shard-gain').innerText = '+' + Math.floor(Math.sqrt(state.essence/1e6)) + ' Shards';
             }
-            if(state.autoLvl >= 10) document.getElementById('oc-btn').style.display = 'block';
-            document.getElementById('void-bg').style.opacity = Math.min(state.essence / 1e7, 0.75);
-            localStorage.setItem('voidDiceSingularity', JSON.stringify(state));
+
+            localStorage.setItem('voidDiceSave', JSON.stringify(state));
         }
 
-        function roll() {
-            let total = 0;
+        function roll(isAuto = false) {
             const floor = document.getElementById('dice-floor');
             floor.innerHTML = '';
+            let totalRoll = 0;
+            let sides = DICE_TYPES[state.evolveLvl].sides;
+
             for(let i=0; i < state.diceCount; i++) {
-                const isCrit = Math.random() < 0.06;
-                const val = Math.floor(Math.random() * 6) + 1;
-                const d = document.createElement('div');
-                d.className = `die ${isCrit ? 'crit' : ''}`;
-                d.style.transform = `rotate(${Math.random()*40-20}deg)`;
-                d.innerText = val;
+                let val = Math.floor(Math.random() * sides) + 1;
+                let isCrit = Math.random() < (state.skin === 'molten' ? 0.08 : 0.05);
+                let d = document.createElement('div');
+                d.className = `die ${isCrit ? 'crit' : ''} rolling`;
+                d.innerHTML = `${val}<div class="die-label">D${sides}</div>`;
                 floor.appendChild(d);
-                total += val * (isCrit ? 10 : 1);
-                if(isCrit) spawnCritText();
+                totalRoll += val * (isCrit ? (state.skin === 'molten' ? 20 : 10) : 1);
+                setTimeout(() => d.classList.remove('rolling'), 100);
             }
-            if (navigator.vibrate) navigator.vibrate(10);
-            state.essence += total * (isOverclocked ? 4 : 1) * (1 + (state.shards * 0.2));
+
+            state.essence += totalRoll * state.battery * (1 + (state.shards * 0.1));
             updateUI();
         }
 
-        function spawnCritText() {
-            const t = document.createElement('div');
-            t.className = 'crit-text'; t.innerText = 'CRIT!';
-            t.style.left = (Math.random() * 50 + 25) + '%';
-            t.style.top = (Math.random() * 20 + 35) + '%';
-            document.body.appendChild(t);
-            setTimeout(() => t.remove(), 600);
-        }
-
-        function activateOverclock() {
-            if(isOverclocked) return;
-            isOverclocked = true;
-            document.getElementById('oc-btn').style.opacity = 0.3;
-            setTimeout(() => { isOverclocked = false; document.getElementById('oc-btn').style.opacity = 1; }, 12000);
-        }
-
         function transcend() {
-            let g = Math.floor(Math.sqrt(state.essence/1e6));
-            if(g >= 1 && confirm(`Sacrifice progress for ${g} shards?`)) {
-                state.shards += g; state.essence = 0; state.autoLvl = 0; state.speedLvl = 1; state.diceCount = 1;
+            let gain = Math.floor(Math.sqrt(state.essence/1e6));
+            if (gain >= 1 && confirm(`Reset for ${gain} Shards?`)) {
+                state.shards += gain;
+                state.essence = 0; state.autoLvl = 0; state.speedLvl = 1; state.diceCount = 1;
                 updateUI();
             }
         }
 
-        const saved = localStorage.getItem('voidDiceSingularity');
-        if (saved) state = {...state, ...JSON.parse(saved)};
         setInterval(() => {
             if (state.autoLvl > 0) {
-                state.essence += (3 * state.autoLvl * state.diceCount * state.speedLvl * (isOverclocked ? 4 : 1)) / 10;
-                updateUI();
+                let speed = state.skin === 'ghostly' ? 1.2 : 1;
+                roll(true);
             }
-        }, 100);
+        }, 2000 / (state.autoLvl || 1));
+
+        const saved = localStorage.getItem('voidDiceSave');
+        if (saved) state = {...state, ...JSON.parse(saved)};
         updateUI();
-        document.getElementById('dice-floor').innerHTML = '<div class="die">?</div>';
     </script>
 </body>
 </html>
