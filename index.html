@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Void Dice: Singularity</title>
+    <title>Void: Infinite Multiverse</title>
     <style>
         :root { 
             --cyan: #00f2ff; --onyx: #050505; --purple: #bc13fe; 
@@ -21,87 +21,112 @@
             height: 100vh; height: -webkit-fill-available;
         }
 
-        #top-nav { padding-top: calc(var(--safe-top) + 10px); text-align: center; width: 100%; flex: 0 1 auto; }
-        #essence-count { font-size: clamp(2.2rem, 8vw, 3.5rem); color: var(--active-color); text-shadow: 0 0 20px var(--active-color); font-weight: 900; transition: 0.3s; }
-        #shard-display { font-size: 0.8rem; color: var(--purple); font-weight: bold; letter-spacing: 2px; margin-top: 5px; }
-        
-        .tab-container { display: flex; justify-content: center; gap: 15px; margin: 10px 0; overflow-x: auto; padding-bottom: 5px; }
-        .tab { font-size: 0.65rem; color: var(--text-gray); cursor: pointer; letter-spacing: 1px; font-weight: bold; padding: 5px 10px; border-bottom: 2px solid transparent; white-space: nowrap; }
-        .tab.active { color: white; border-bottom-color: var(--active-color); }
+        /* Top Nav */
+        #top-nav { padding-top: calc(var(--safe-top) + 10px); text-align: center; width: 100%; flex: 0 0 auto; z-index: 100; }
+        #essence-count { font-size: clamp(2rem, 8vw, 3.2rem); color: var(--active-color); text-shadow: 0 0 20px var(--active-color); font-weight: 900; }
+        #stat-bar { font-size: 0.7rem; color: var(--purple); font-weight: bold; margin-top: 5px; letter-spacing: 1px; }
 
+        /* Game Area & Bosses */
         #game-area { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; position: relative; }
-        
-        /* Boss UI */
-        #boss-container { position: absolute; top: 15%; display: none; flex-direction: column; align-items: center; z-index: 5; }
-        .void-core { width: 80px; height: 80px; background: radial-gradient(circle, #000 30%, var(--purple) 100%); border-radius: 50%; box-shadow: 0 0 30px var(--purple); animation: pulse 0.8s infinite alternate; }
-        .hp-bar { width: 200px; height: 10px; background: #222; border: 1px solid var(--purple); border-radius: 5px; margin-top: 10px; overflow: hidden; }
-        #hp-fill { height: 100%; background: var(--purple); width: 100%; transition: width 0.1s; }
+        #boss-ui { position: absolute; top: 15%; display: none; flex-direction: column; align-items: center; width: 100%; }
+        .boss-core { width: 80px; height: 80px; background: radial-gradient(circle, #000, var(--purple)); border-radius: 50%; box-shadow: 0 0 40px var(--purple); animation: pulse 0.8s infinite alternate; }
+        .hp-bar { width: 220px; height: 10px; background: #111; border: 1px solid var(--purple); border-radius: 5px; margin-top: 15px; overflow: hidden; }
+        #hp-fill { height: 100%; background: var(--purple); width: 100%; transition: width 0.1s linear; }
 
-        #dice-floor { display: grid; grid-template-columns: repeat(auto-fit, minmax(65px, 1fr)); gap: 12px; width: 90%; max-width: 380px; justify-items: center; margin: 15px 0; }
-        .die { width: 70px; height: 70px; border: 2px solid var(--active-color); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; border-radius: 12px; background: #000; box-shadow: 0 4px 15px rgba(0,0,0,0.5); transition: 0.1s; position: relative; }
-        .die.rolling { transform: scale(1.1) rotate(10deg); filter: brightness(1.5); }
+        /* Dice Animations */
+        #dice-floor { display: grid; grid-template-columns: repeat(auto-fit, minmax(65px, 1fr)); gap: 12px; width: 90%; max-width: 380px; justify-items: center; }
+        .die { 
+            width: 70px; height: 70px; border: 2px solid var(--active-color); 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 1.6rem; border-radius: 12px; background: #000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); position: relative;
+            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .die.rolling { transform: scale(1.15) rotate(15deg) translateY(-5px); filter: brightness(1.5); }
         .die.crit { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 20px var(--gold); }
         .die-label { position: absolute; bottom: -18px; font-size: 0.5rem; color: var(--text-gray); }
 
-        .panel { width: 100%; max-width: 500px; background: rgba(8, 8, 8, 0.98); padding: 20px; padding-bottom: calc(var(--safe-bottom) + 15px); border-radius: 30px 30px 0 0; border-top: 1px solid #222; align-self: center; height: 45vh; overflow-y: auto; display: none; }
+        /* Tabs & Panels */
+        .tab-container { display: flex; background: #080808; border-top: 1px solid #222; overflow-x: auto; flex: 0 0 auto; }
+        .tab { flex: 1; text-align: center; padding: 15px 5px; font-size: 0.65rem; color: var(--text-gray); font-weight: 900; cursor: pointer; text-transform: uppercase; }
+        .tab.active { color: white; border-bottom: 2px solid var(--active-color); background: #0c0c0c; }
+
+        .panel { 
+            display: none; width: 100%; max-width: 500px; background: #080808; 
+            padding: 20px; padding-bottom: calc(var(--safe-bottom) + 15px);
+            align-self: center; height: 40vh; overflow-y: auto;
+        }
         .panel.active { display: block; }
-        .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 12px; border-radius: 12px; background: #0c0c0c; }
-        .btn { color: var(--active-color); border: 1px solid var(--active-color); padding: 8px 12px; border-radius: 8px; font-size: 0.75rem; cursor: pointer; background: transparent; font-weight: bold; min-width: 80px; }
+        .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 12px; border-radius: 12px; background: #0c0c0c; border: 1px solid #1a1a1a; }
         
-        .rank-me { color: var(--cyan); border: 1px solid var(--cyan); }
-        @keyframes pulse { from { transform: scale(1); opacity: 0.8; } to { transform: scale(1.1); opacity: 1; } }
+        /* Buttons & Store */
+        .btn { color: var(--active-color); border: 1px solid var(--active-color); padding: 8px 12px; border-radius: 8px; font-size: 0.75rem; cursor: pointer; background: transparent; font-weight: 900; min-width: 90px; text-align: center; }
+        .btn:active { background: white; color: black; }
+        .btn.owned { border-color: var(--text-gray); color: var(--text-gray); }
+        .btn.equipped { border-color: var(--gold); color: var(--gold); background: rgba(255, 215, 0, 0.1); }
+
+        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
     </style>
 </head>
 <body>
+
     <div id="top-nav">
         <div id="essence-count">0</div>
-        <div id="shard-display">0 SHARDS | RANK #<span id="rank-val">9999</span></div>
-        <div class="tab-container">
-            <div class="tab active" onclick="switchTab('upgrades')">NEURAL</div>
-            <div class="tab" onclick="switchTab('void')">STORE</div>
-            <div class="tab" onclick="switchTab('bestiary')">BESTIARY</div>
-            <div class="tab" onclick="switchTab('echoes')">ECHOES</div>
-        </div>
+        <div id="stat-bar">SHARDS: <span id="shard-val">0</span> | RANK #<span id="rank-val">9999</span></div>
     </div>
 
     <div id="game-area">
-        <div id="boss-container">
-            <div class="void-core"></div>
+        <div id="boss-ui">
+            <div id="boss-name" style="font-size: 0.7rem; color: var(--purple); margin-bottom: 5px; font-weight: 900;">CORE SENTINEL</div>
+            <div class="boss-core"></div>
             <div class="hp-bar"><div id="hp-fill"></div></div>
         </div>
         <div id="dice-floor" onclick="roll()"></div>
-        <button class="btn" style="padding: 12px 30px; border-radius: 20px; margin-top:10px;" onclick="roll()">MANUAL ROLL</button>
+        <button class="btn" style="margin-top:20px; border-radius:20px; padding: 10px 40px;" onclick="roll()">ROLL REALITY</button>
+    </div>
+
+    <div class="tab-container">
+        <div class="tab active" onclick="switchTab('upgrades')">Upgrades</div>
+        <div class="tab" onclick="switchTab('store')">Skins</div>
+        <div class="tab" onclick="switchTab('bestiary')">Bestiary</div>
+        <div class="tab" onclick="switchTab('echoes')">Echoes</div>
     </div>
 
     <div class="panel active" id="panel-upgrades">
-        <div class="row"><div><span>Auto-Link</span><br><small id="auto-lvl">Lvl 0</small></div><button class="btn" onclick="buy('auto')">100</button></div>
-        <div class="row"><div><span>Summon Dice</span><br><small id="dice-lvl">1 Die</small></div><button class="btn" onclick="buy('dice')">25k</button></div>
-        <div class="row"><div><span>Dice Evolution</span><br><small id="evolve-lvl">Class: D6</small></div><button class="btn" onclick="buy('evolve')">1M</button></div>
-        <button class="btn" style="width:100%; margin-top:10px; color:var(--purple); border-color:var(--purple)" onclick="spawnBoss()">BREACH CORE (10k Essence)</button>
-        <div id="prestige-area" style="display:none; margin-top:15px;"><div class="row" style="border:1px solid var(--purple)"><div><span style="color:var(--purple)">TRANSCEND</span><br><small id="shard-gain">+0 Shards</small></div><button class="btn" style="color:var(--purple)" onclick="transcend()">ASCEND</button></div></div>
+        <div class="row"><div>Auto-Link<br><small id="auto-lvl">Lvl 0</small></div><button class="btn" onclick="buy('auto')">100</button></div>
+        <div class="row"><div>Dice Summons<br><small id="dice-lvl">1 Die</small></div><button class="btn" onclick="buy('dice')">25k</button></div>
+        <div class="row"><div>Evolution<br><small id="evolve-lvl">Class: D6</small></div><button class="btn" onclick="buy('evolve')">1M</button></div>
+        <button class="btn" style="width:100%; margin-top:10px; border-color: var(--purple); color: var(--purple);" onclick="spawnBoss()">BREACH CORE (10k Essence)</button>
+        <div id="ascend-area" style="display:none; margin-top:15px;">
+            <div class="row" style="border:1px solid var(--gold)"><div><span style="color:var(--gold)">ASCEND</span><br><small id="shard-gain">+0 Shards</small></div><button class="btn" style="color:var(--gold); border-color:var(--gold)" onclick="ascend()">RESET</button></div>
+        </div>
     </div>
 
-    <div class="panel" id="panel-void">
-        <div class="row"><div><span>Molten Skin</span><br><small>20x Crit Multiplier</small></div><button class="btn" onclick="buySkin('molten', 5)">5 S</button></div>
-        <div class="row"><div><span>Ghostly Skin</span><br><small>+25% Speed</small></div><button class="btn" onclick="buySkin('ghostly', 15)">15 S</button></div>
+    <div class="panel" id="panel-store">
+        <div class="row"><div>Molten Skin<br><small>20x Crit Multiplier</small></div><button id="skin-molten" class="btn" onclick="handleSkin('molten', 5)">5 Shards</button></div>
+        <div class="row"><div>Ghostly Skin<br><small>+25% Speed Boost</small></div><button id="skin-ghostly" class="btn" onclick="handleSkin('ghostly', 15)">15 Shards</button></div>
     </div>
 
     <div class="panel" id="panel-bestiary">
-        <div id="soul-list"></div>
+        <div id="bestiary-stats" style="font-size: 0.8rem; color: #eee; line-height: 1.6;">
+            <strong>Soul Traits:</strong><br>
+            • Core Hunter: <span id="soul-kills">0</span> Kills (+<span id="soul-multi">0</span>% Shard Gain)
+        </div>
     </div>
 
     <div class="panel" id="panel-echoes">
-        <div id="leaderboard-list"></div>
+        <div id="echoes-list"></div>
     </div>
 
     <script>
-        let state = { 
-            essence: 0, autoLvl: 0, speedLvl: 1, diceCount: 1, evolveLvl: 0,
-            shards: 0, skin: 'cyan', ownedSkins: ['cyan'], battery: 1,
-            bossKills: 0, rank: 9999
+        let s = {
+            e: 0, auto: 0, dice: 1, ev: 0, 
+            shards: 0, bossKills: 0, 
+            skin: 'cyan', owned: ['cyan'], 
+            rank: 9999
         };
-        
-        const DICE_TYPES = [{name:'D6', sides:6, cost:1e6}, {name:'D12', sides:12, cost:50e6}, {name:'D20', sides:20, cost:1e9}, {name:'D100', sides:100, cost:Infinity}];
+
+        const DICE = [{n:'D6', s:6, c:1e6}, {n:'D12', s:12, c:50e6}, {n:'D20', s:20, c:1e9}, {n:'D100', s:100, c:Infinity}];
         let boss = { active: false, hp: 0, max: 0 };
 
         function format(n) {
@@ -114,93 +139,129 @@
         function switchTab(t) {
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-            document.getElementById('panel-' + t).classList.add('active');
+            document.getElementById('panel-'+t).classList.add('active');
             event.target.classList.add('active');
-            if(t === 'echoes') updateLeaderboard();
+            if(t === 'echoes') updateEchoes();
         }
 
         function roll(isAuto = false) {
             const floor = document.getElementById('dice-floor');
             floor.innerHTML = '';
-            let total = 0, sides = DICE_TYPES[state.evolveLvl].sides;
+            let total = 0, sides = DICE[s.ev].s;
 
-            for(let i=0; i < state.diceCount; i++) {
-                let val = Math.floor(Math.random() * sides) + 1;
-                let isCrit = Math.random() < (state.skin === 'molten' ? 0.08 : 0.05);
+            for(let i=0; i<s.dice; i++) {
+                let v = Math.floor(Math.random() * sides) + 1;
+                let isCrit = Math.random() < (s.skin === 'molten' ? 0.08 : 0.05);
                 let d = document.createElement('div');
                 d.className = `die ${isCrit ? 'crit' : ''} rolling`;
-                d.innerHTML = `${val}<div class="die-label">D${sides}</div>`;
+                d.innerHTML = `${v}<div class="die-label">D${sides}</div>`;
                 floor.appendChild(d);
-                total += val * (isCrit ? (state.skin === 'molten' ? 20 : 10) : 1);
+                total += v * (isCrit ? (s.skin === 'molten' ? 20 : 10) : 1);
+                setTimeout(() => d.classList.remove('rolling'), 100);
             }
 
-            let rankBonus = 1 + (10000 - state.rank) / 5000;
-            state.essence += total * state.battery * (1 + (state.shards * 0.1)) * rankBonus;
-            
+            let rankBonus = 1 + (10000 - s.rank) / 5000;
+            let soulMulti = 1 + (s.bossKills * 0.05);
+            s.e += total * (1 + (s.shards * 0.1)) * rankBonus * soulMulti;
+
             if (boss.active) {
                 boss.hp -= total;
-                if (boss.hp <= 0) {
-                    boss.active = false;
-                    state.bossKills++;
-                    state.shards += (state.evolveLvl + 1) * 2;
-                    document.getElementById('boss-container').style.display = 'none';
-                }
+                if (boss.hp <= 0) winBoss();
             }
             updateUI();
         }
 
         function spawnBoss() {
-            if (state.essence < 10000 || boss.active) return;
-            state.essence -= 10000;
+            if (s.e < 10000 || boss.active) return;
+            s.e -= 10000;
             boss.active = true;
-            boss.max = 1500 * (state.evolveLvl + 1);
+            boss.max = 2000 * (s.ev + 1) * (1 + s.bossKills * 0.5);
             boss.hp = boss.max;
-            document.getElementById('boss-container').style.display = 'flex';
+            document.getElementById('boss-ui').style.display = 'flex';
+            updateUI();
+        }
+
+        function winBoss() {
+            boss.active = false;
+            s.bossKills++;
+            let gain = (s.ev + 1) * 2;
+            s.shards += gain;
+            document.getElementById('boss-ui').style.display = 'none';
+            updateUI();
+        }
+
+        function handleSkin(name, cost) {
+            if (s.owned.includes(name)) {
+                s.skin = name;
+            } else if (s.shards >= cost) {
+                s.shards -= cost;
+                s.owned.push(name);
+                s.skin = name;
+            }
             updateUI();
         }
 
         function updateUI() {
-            document.getElementById('essence-count').innerText = format(state.essence);
-            document.getElementById('shard-display').innerHTML = `${state.shards} SHARDS | RANK #<span id="rank-val">${state.rank}</span>`;
-            document.getElementById('auto-lvl').innerText = 'Lvl ' + state.autoLvl;
-            document.getElementById('dice-lvl').innerText = state.diceCount + ' Dice';
-            document.getElementById('evolve-lvl').innerText = 'Class: ' + DICE_TYPES[state.evolveLvl].name;
-            
-            if (boss.active) document.getElementById('hp-fill').style.width = (boss.hp / boss.max * 100) + '%';
-            if (state.essence >= 1e6) document.getElementById('prestige-area').style.display = 'block';
-            
-            state.rank = Math.max(1, 10000 - Math.floor(Math.log10(state.essence + 1) * 1000));
-            localStorage.setItem('voidDiceSave', JSON.stringify(state));
+            document.getElementById('essence-count').innerText = format(s.e);
+            document.getElementById('shard-val').innerText = s.shards;
+            document.getElementById('auto-lvl').innerText = 'Lvl ' + s.auto;
+            document.getElementById('dice-lvl').innerText = s.dice + ' Dice';
+            document.getElementById('evolve-lvl').innerText = 'Class: ' + DICE[s.ev].n;
+            document.getElementById('soul-kills').innerText = s.bossKills;
+            document.getElementById('soul-multi').innerText = (s.bossKills * 5);
+
+            // Dynamic Rank
+            s.rank = Math.max(1, 10000 - Math.floor(Math.log10(s.e + 1) * 1000));
+            document.getElementById('rank-val').innerText = s.rank;
+
+            // Colors & Skins
+            let colors = { cyan: '#00f2ff', molten: '#ff8c00', ghostly: '#bc13fe' };
+            document.documentElement.style.setProperty('--active-color', colors[s.skin]);
+
+            ['molten', 'ghostly'].forEach(id => {
+                let btn = document.getElementById('skin-'+id);
+                if (s.skin === id) { btn.innerText = "EQUIPPED"; btn.className = "btn equipped"; }
+                else if (s.owned.includes(id)) { btn.innerText = "EQUIP"; btn.className = "btn owned"; }
+            });
+
+            if (boss.active) document.getElementById('hp-fill').style.width = (boss.hp/boss.max*100) + '%';
+            if (s.e >= 1e6) {
+                document.getElementById('ascend-area').style.display = 'block';
+                document.getElementById('shard-gain').innerText = '+' + Math.floor(Math.sqrt(s.e/1e6)) + ' Shards';
+            }
+
+            localStorage.setItem('void_master_save', JSON.stringify(s));
+        }
+
+        function ascend() {
+            let gain = Math.floor(Math.sqrt(s.e/1e6));
+            if (gain >= 1 && confirm(`Collapse your universe for ${gain} Shards?`)) {
+                s.shards += gain; s.e = 0; s.auto = 0; s.dice = 1; s.ev = 0;
+                updateUI();
+            }
         }
 
         function buy(type) {
-            let cost = type === 'evolve' ? DICE_TYPES[state.evolveLvl].cost : 100 * Math.pow(1.5, type === 'auto' ? state.autoLvl : state.diceCount);
-            if (state.essence >= cost) {
-                state.essence -= cost;
-                if(type === 'auto') state.autoLvl++; else if(type === 'dice') state.diceCount++; else state.evolveLvl++;
+            let cost = type==='evolve' ? DICE[s.ev].c : 100 * Math.pow(1.6, type==='auto' ? s.auto : s.dice);
+            if (s.e >= cost) {
+                s.e -= cost;
+                if(type==='auto') s.auto++; else if(type==='dice') s.dice++; else s.ev++;
                 updateUI();
             }
         }
 
-        function updateLeaderboard() {
-            const list = document.getElementById('leaderboard-list');
-            list.innerHTML = `<div class="row rank-me"><span>#${state.rank} YOU</span><span>${format(state.essence)}</span></div>`;
-            ["VoidSeeker", "PixelGod", "NullPointer"].forEach((n, i) => {
-                list.innerHTML += `<div class="row"><span>#${state.rank + (i+1)*10} ${n}</span><span>${format(state.essence/(i+2))}</span></div>`;
+        function updateEchoes() {
+            const list = document.getElementById('echoes-list');
+            list.innerHTML = `<div class="row" style="border-color:var(--cyan)"><span>#${s.rank} YOU</span><span>${format(s.e)}</span></div>`;
+            ["Void_X", "Nebula", "Zenith"].forEach((name, i) => {
+                list.innerHTML += `<div class="row" style="opacity:0.6"><span>#${s.rank + (i+1)*5} ${name}</span><span>${format(s.e/(i+2))}</span></div>`;
             });
         }
 
-        function transcend() {
-            let gain = Math.floor(Math.sqrt(state.essence/1e6));
-            if (gain >= 1 && confirm(`Ascend for ${gain} Shards?`)) {
-                state.shards += gain; state.essence = 0; state.autoLvl = 0; state.diceCount = 1;
-                updateUI();
-            }
-        }
-
-        setInterval(() => { if (state.autoLvl > 0) roll(true); }, 1000 / (state.autoLvl || 1));
-        const saved = localStorage.getItem('voidDiceSave');
-        if (saved) state = {...state, ...JSON.parse(saved)};
+        setInterval(() => { if(s.auto > 0) roll(true); }, 1000 / (s.auto || 1) / (s.skin === 'ghostly' ? 1.25 : 1));
+        
+        const saved = localStorage.getItem('void_master_save');
+        if (saved) s = {...s, ...JSON.parse(saved)};
         updateUI();
     </script>
 </body>
