@@ -3,145 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Void: Infinite Multiverse</title>
+    <title>Void: Unified Singularity</title>
     <style>
         :root { 
             --cyan: #00f2ff; --onyx: #050505; --purple: #bc13fe; 
-            --gray: #111; --text-gray: #555; --gold: #ffd700; --red: #ff4444;
-            --orange: #ff8c00;
-            --active-color: var(--cyan);
+            --gold: #ffd700; --active-color: var(--cyan);
             --safe-top: env(safe-area-inset-top);
-            --safe-bottom: env(safe-area-inset-bottom);
         }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { 
             background-color: var(--onyx); color: white; margin: 0; 
-            font-family: 'Inter', system-ui, sans-serif;
-            overflow: hidden; display: flex; flex-direction: column; 
-            height: 100vh; height: -webkit-fill-available;
+            font-family: 'Inter', sans-serif; overflow: hidden;
+            display: flex; flex-direction: column; height: 100vh;
         }
 
-        /* Top Nav */
-        #top-nav { padding-top: calc(var(--safe-top) + 10px); text-align: center; width: 100%; flex: 0 0 auto; z-index: 100; }
-        #essence-count { font-size: clamp(2rem, 8vw, 3.2rem); color: var(--active-color); text-shadow: 0 0 20px var(--active-color); font-weight: 900; }
-        #stat-bar { font-size: 0.7rem; color: var(--purple); font-weight: bold; margin-top: 5px; letter-spacing: 1px; }
-
-        /* Game Area & Bosses */
-        #game-area { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; position: relative; }
-        #boss-ui { position: absolute; top: 15%; display: none; flex-direction: column; align-items: center; width: 100%; }
-        .boss-core { width: 80px; height: 80px; background: radial-gradient(circle, #000, var(--purple)); border-radius: 50%; box-shadow: 0 0 40px var(--purple); animation: pulse 0.8s infinite alternate; }
-        .hp-bar { width: 220px; height: 10px; background: #111; border: 1px solid var(--purple); border-radius: 5px; margin-top: 15px; overflow: hidden; }
-        #hp-fill { height: 100%; background: var(--purple); width: 100%; transition: width 0.1s linear; }
-
-        /* Dice Animations */
-        #dice-floor { display: grid; grid-template-columns: repeat(auto-fit, minmax(65px, 1fr)); gap: 12px; width: 90%; max-width: 380px; justify-items: center; }
-        .die { 
-            width: 70px; height: 70px; border: 2px solid var(--active-color); 
-            display: flex; align-items: center; justify-content: center; 
-            font-size: 1.6rem; border-radius: 12px; background: #000;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5); position: relative;
-            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .die.rolling { transform: scale(1.15) rotate(15deg) translateY(-5px); filter: brightness(1.5); }
-        .die.crit { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 20px var(--gold); }
-        .die-label { position: absolute; bottom: -18px; font-size: 0.5rem; color: var(--text-gray); }
-
-        /* Tabs & Panels */
-        .tab-container { display: flex; background: #080808; border-top: 1px solid #222; overflow-x: auto; flex: 0 0 auto; }
-        .tab { flex: 1; text-align: center; padding: 15px 5px; font-size: 0.65rem; color: var(--text-gray); font-weight: 900; cursor: pointer; text-transform: uppercase; }
-        .tab.active { color: white; border-bottom: 2px solid var(--active-color); background: #0c0c0c; }
-
-        .panel { 
-            display: none; width: 100%; max-width: 500px; background: #080808; 
-            padding: 20px; padding-bottom: calc(var(--safe-bottom) + 15px);
-            align-self: center; height: 40vh; overflow-y: auto;
-        }
-        .panel.active { display: block; }
-        .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 12px; border-radius: 12px; background: #0c0c0c; border: 1px solid #1a1a1a; }
+        #top-nav { padding-top: calc(var(--safe-top) + 10px); text-align: center; flex: 0 0 auto;}
+        #essence-count { font-size: 2.8rem; color: var(--active-color); text-shadow: 0 0 20px var(--active-color); font-weight: 900; }
         
-        /* Buttons & Store */
-        .btn { color: var(--active-color); border: 1px solid var(--active-color); padding: 8px 12px; border-radius: 8px; font-size: 0.75rem; cursor: pointer; background: transparent; font-weight: 900; min-width: 90px; text-align: center; }
-        .btn:active { background: white; color: black; }
-        .btn.owned { border-color: var(--text-gray); color: var(--text-gray); }
-        .btn.equipped { border-color: var(--gold); color: var(--gold); background: rgba(255, 215, 0, 0.1); }
+        #overdrive-container { width: 60%; height: 6px; background: #111; margin: 10px auto; border-radius: 3px; overflow: hidden; border: 1px solid #222; }
+        #overdrive-bar { height: 100%; width: 0%; background: var(--gold); transition: width 0.1s linear; }
 
-        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
+        #game-area { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
+        #dice-floor { display: grid; grid-template-columns: repeat(auto-fit, minmax(60px, 1fr)); gap: 12px; width: 90%; max-width: 360px; justify-items: center; }
+        .die { width: 65px; height: 65px; border: 2px solid var(--active-color); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border-radius: 12px; background: #000; transition: 0.1s;}
+        .die.rolling { transform: scale(1.1) rotate(10deg); }
+        .die.crit { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 20px var(--gold); }
+
+        .tab-bar { display: flex; background: #080808; border-top: 1px solid #222; flex: 0 0 auto; overflow-x: auto;}
+        .tab { flex: 1; text-align: center; padding: 15px; font-size: 0.6rem; color: #555; font-weight: 900; cursor: pointer; text-transform: uppercase; white-space: nowrap; min-width: 100px;}
+        .tab.active { color: white; border-bottom: 2px solid var(--active-color); background: #0c0c0c;}
+
+        .panel { display: none; padding: 20px; height: 40vh; overflow-y: auto; background: #080808; }
+        .panel.active { display: block; }
+        .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 12px; background: #0c0c0c; border-radius: 10px; border: 1px solid #1a1a1a; }
+        .btn { color: var(--active-color); border: 1px solid var(--active-color); padding: 8px 15px; border-radius: 8px; font-size: 0.7rem; cursor: pointer; background: transparent; font-weight: 900; }
+        .btn:disabled { opacity: 0.2; color: #333; border-color: #333;}
+        
+        .trait-locked { opacity: 0.3; filter: grayscale(1); }
+        .trait-unlocked { border-color: var(--gold); background: rgba(255, 215, 0, 0.05); }
     </style>
 </head>
 <body>
 
     <div id="top-nav">
         <div id="essence-count">0</div>
-        <div id="stat-bar">SHARDS: <span id="shard-val">0</span> | RANK #<span id="rank-val">9999</span></div>
+        <div id="overdrive-container"><div id="overdrive-bar"></div></div>
+        <div style="font-size:0.65rem; color:var(--purple); font-weight:bold; letter-spacing: 1px;">
+            SHARDS: <span id="shard-val">0</span> | KILLS: <span id="kill-val">0</span> | COMBO: <span id="combo-val">1.0</span>x
+        </div>
     </div>
 
     <div id="game-area">
-        <div id="boss-ui">
-            <div id="boss-name" style="font-size: 0.7rem; color: var(--purple); margin-bottom: 5px; font-weight: 900;">CORE SENTINEL</div>
-            <div class="boss-core"></div>
-            <div class="hp-bar"><div id="hp-fill"></div></div>
-        </div>
         <div id="dice-floor" onclick="roll()"></div>
-        <button class="btn" style="margin-top:20px; border-radius:20px; padding: 10px 40px;" onclick="roll()">ROLL REALITY</button>
+        <button id="od-btn" class="btn" style="margin-top:20px; border-color:var(--gold); color:var(--gold); display:none;" onclick="triggerOverdrive()">ACTIVATE OVERDRIVE</button>
     </div>
 
-    <div class="tab-container">
-        <div class="tab active" onclick="switchTab('upgrades')">Upgrades</div>
-        <div class="tab" onclick="switchTab('store')">Skins</div>
-        <div class="tab" onclick="switchTab('bestiary')">Bestiary</div>
-        <div class="tab" onclick="switchTab('echoes')">Echoes</div>
+    <div class="tab-bar">
+        <div class="tab active" onclick="tab('upgrades')">Upgrades</div>
+        <div class="tab" onclick="tab('forge')">Forge</div>
+        <div class="tab" onclick="tab('bestiary')">Bestiary</div>
     </div>
 
-    <div class="panel active" id="panel-upgrades">
+    <div class="panel active" id="upgrades">
         <div class="row"><div>Auto-Link<br><small id="auto-lvl">Lvl 0</small></div><button class="btn" onclick="buy('auto')">100</button></div>
-        <div class="row"><div>Dice Summons<br><small id="dice-lvl">1 Die</small></div><button class="btn" onclick="buy('dice')">25k</button></div>
-        <div class="row"><div>Evolution<br><small id="evolve-lvl">Class: D6</small></div><button class="btn" onclick="buy('evolve')">1M</button></div>
-        <button class="btn" style="width:100%; margin-top:10px; border-color: var(--purple); color: var(--purple);" onclick="spawnBoss()">BREACH CORE (10k Essence)</button>
-        <div id="ascend-area" style="display:none; margin-top:15px;">
-            <div class="row" style="border:1px solid var(--gold)"><div><span style="color:var(--gold)">ASCEND</span><br><small id="shard-gain">+0 Shards</small></div><button class="btn" style="color:var(--gold); border-color:var(--gold)" onclick="ascend()">RESET</button></div>
+        <div class="row"><div>Evolution<br><small id="evolve-lvl">D6</small></div><button class="btn" onclick="buy('evolve')">1M</button></div>
+        <button class="btn" style="width:100%; margin-top:10px; border-color:var(--purple); color:var(--purple)" onclick="spawnBoss()">BREACH CORE (10k)</button>
+    </div>
+
+    <div class="panel" id="forge">
+        <div id="forge-list"><div style="text-align:center; color:#444; margin-top:20px;">No relics found.</div></div>
+    </div>
+
+    <div class="panel" id="bestiary">
+        <div id="soul-traits">
+            <div class="row trait-locked" id="trait-10"><div>Gilded Soul (10 Kills)<br><small>+25% Essence Gain</small></div></div>
+            <div class="row trait-locked" id="trait-25"><div>Quantum Soul (25 Kills)<br><small>2x Overdrive Charge Speed</small></div></div>
+            <div class="row trait-locked" id="trait-50"><div>Eternal Soul (50 Kills)<br><small>20% Cheaper Forge Upgrades</small></div></div>
         </div>
-    </div>
-
-    <div class="panel" id="panel-store">
-        <div class="row"><div>Molten Skin<br><small>20x Crit Multiplier</small></div><button id="skin-molten" class="btn" onclick="handleSkin('molten', 5)">5 Shards</button></div>
-        <div class="row"><div>Ghostly Skin<br><small>+25% Speed Boost</small></div><button id="skin-ghostly" class="btn" onclick="handleSkin('ghostly', 15)">15 Shards</button></div>
-    </div>
-
-    <div class="panel" id="panel-bestiary">
-        <div id="bestiary-stats" style="font-size: 0.8rem; color: #eee; line-height: 1.6;">
-            <strong>Soul Traits:</strong><br>
-            • Core Hunter: <span id="soul-kills">0</span> Kills (+<span id="soul-multi">0</span>% Shard Gain)
-        </div>
-    </div>
-
-    <div class="panel" id="panel-echoes">
-        <div id="echoes-list"></div>
     </div>
 
     <script>
         let s = {
-            e: 0, auto: 0, dice: 1, ev: 0, 
-            shards: 0, bossKills: 0, 
-            skin: 'cyan', owned: ['cyan'], 
-            rank: 9999
+            e: 0, auto: 0, dice: 1, ev: 0, shards: 0, kills: 0,
+            odCharge: 0, odActive: false,
+            combo: 1, lastRollTime: 0,
+            relics: [], 
+            relicLevels: { "🔥": 1, "❄️": 1, "⚡": 1, "👁️": 1 }
         };
 
-        const DICE = [{n:'D6', s:6, c:1e6}, {n:'D12', s:12, c:50e6}, {n:'D20', s:20, c:1e9}, {n:'D100', s:100, c:Infinity}];
-        let boss = { active: false, hp: 0, max: 0 };
+        const RELIC_DATA = {
+            "🔥": { name: "Infernal Core", base: 50, scale: 20 },
+            "❄️": { name: "Zero Point", base: 2, scale: 0.5 },
+            "⚡": { name: "Pulse Link", base: 10, scale: 5 },
+            "👁️": { name: "Void Eye", base: 10, scale: 5 }
+        };
 
-        function format(n) {
-            if (n >= 1e9) return (n/1e9).toFixed(2) + "B";
-            if (n >= 1e6) return (n/1e6).toFixed(1) + "M";
-            if (n >= 1e3) return (n/1e3).toFixed(1) + "k";
-            return Math.floor(n);
-        }
+        const DICE = [{s:6, c:1e6}, {s:12, c:50e6}, {s:20, c:1e9}, {s:100, c:Infinity}];
 
-        function switchTab(t) {
+        function tab(t) {
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-            document.getElementById('panel-'+t).classList.add('active');
+            document.getElementById(t).classList.add('active');
             event.target.classList.add('active');
-            if(t === 'echoes') updateEchoes();
         }
 
         function roll(isAuto = false) {
@@ -149,118 +112,111 @@
             floor.innerHTML = '';
             let total = 0, sides = DICE[s.ev].s;
 
-            for(let i=0; i<s.dice; i++) {
+            let now = Date.now();
+            if (now - s.lastRollTime < 1500) s.combo = Math.min(5, s.combo + 0.05);
+            else s.combo = 1;
+            s.lastRollTime = now;
+
+            for(let i=0; i < s.dice; i++) {
                 let v = Math.floor(Math.random() * sides) + 1;
-                let isCrit = Math.random() < (s.skin === 'molten' ? 0.08 : 0.05);
+                let eyeProcChance = s.relics.includes("👁️") ? (RELIC_DATA["👁️"].base + (s.relicLevels["👁️"]-1) * RELIC_DATA["👁️"].scale) / 100 : 0.05;
+                let isCrit = Math.random() < 0.05;
+                let eyeProc = Math.random() < eyeProcChance;
+                
                 let d = document.createElement('div');
                 d.className = `die ${isCrit ? 'crit' : ''} rolling`;
-                d.innerHTML = `${v}<div class="die-label">D${sides}</div>`;
+                d.innerText = v;
                 floor.appendChild(d);
-                total += v * (isCrit ? (s.skin === 'molten' ? 20 : 10) : 1);
-                setTimeout(() => d.classList.remove('rolling'), 100);
+
+                let critMult = s.relics.includes("🔥") ? (RELIC_DATA["🔥"].base + (s.relicLevels["🔥"]-1) * RELIC_DATA["🔥"].scale) : 10;
+                let val = v * (isCrit ? critMult : 1);
+                if (eyeProc) val *= 2;
+                total += val;
             }
 
-            let rankBonus = 1 + (10000 - s.rank) / 5000;
-            let soulMulti = 1 + (s.bossKills * 0.05);
-            s.e += total * (1 + (s.shards * 0.1)) * rankBonus * soulMulti;
+            let gildedBonus = s.kills >= 10 ? 1.25 : 1;
+            s.e += total * s.combo * (1 + s.shards * 0.1) * gildedBonus;
 
-            if (boss.active) {
-                boss.hp -= total;
-                if (boss.hp <= 0) winBoss();
+            if (!s.odActive) {
+                let odMulti = s.kills >= 25 ? 0.4 : 0.2;
+                s.odCharge = Math.min(100, s.odCharge + odMulti);
             }
             updateUI();
+        }
+
+        function triggerOverdrive() {
+            s.odActive = true;
+            document.getElementById('od-btn').style.display = 'none';
+            let odInt = setInterval(() => {
+                s.odCharge -= 2;
+                roll(true);
+                if (s.odCharge <= 0) { clearInterval(odInt); s.odActive = false; }
+                updateUI();
+            }, 100);
         }
 
         function spawnBoss() {
-            if (s.e < 10000 || boss.active) return;
+            if (s.e < 10000) return;
             s.e -= 10000;
-            boss.active = true;
-            boss.max = 2000 * (s.ev + 1) * (1 + s.bossKills * 0.5);
-            boss.hp = boss.max;
-            document.getElementById('boss-ui').style.display = 'flex';
+            s.kills++;
+            let shardBonus = s.relics.includes("❄️") ? (RELIC_DATA["❄️"].base + (s.relicLevels["❄️"]-1) * RELIC_DATA["❄️"].scale) : 5;
+            s.shards += Math.floor(shardBonus);
+
+            let pool = Object.keys(RELIC_DATA).filter(r => !s.relics.includes(r));
+            if (pool.length > 0 && Math.random() > 0.4) s.relics.push(pool[0]);
             updateUI();
         }
 
-        function winBoss() {
-            boss.active = false;
-            s.bossKills++;
-            let gain = (s.ev + 1) * 2;
-            s.shards += gain;
-            document.getElementById('boss-ui').style.display = 'none';
-            updateUI();
-        }
-
-        function handleSkin(name, cost) {
-            if (s.owned.includes(name)) {
-                s.skin = name;
-            } else if (s.shards >= cost) {
+        function upgradeRelic(r) {
+            let discount = s.kills >= 50 ? 0.8 : 1;
+            let cost = Math.floor(s.relicLevels[r] * 15 * discount);
+            if (s.shards >= cost) {
                 s.shards -= cost;
-                s.owned.push(name);
-                s.skin = name;
+                s.relicLevels[r]++;
+                updateUI();
             }
-            updateUI();
         }
 
         function updateUI() {
-            document.getElementById('essence-count').innerText = format(s.e);
+            document.getElementById('essence-count').innerText = Math.floor(s.e).toLocaleString();
             document.getElementById('shard-val').innerText = s.shards;
-            document.getElementById('auto-lvl').innerText = 'Lvl ' + s.auto;
-            document.getElementById('dice-lvl').innerText = s.dice + ' Dice';
-            document.getElementById('evolve-lvl').innerText = 'Class: ' + DICE[s.ev].n;
-            document.getElementById('soul-kills').innerText = s.bossKills;
-            document.getElementById('soul-multi').innerText = (s.bossKills * 5);
+            document.getElementById('kill-val').innerText = s.kills;
+            document.getElementById('overdrive-bar').style.width = s.odCharge + '%';
+            document.getElementById('combo-val').innerText = s.combo.toFixed(1);
+            if (s.odCharge >= 100) document.getElementById('od-btn').style.display = 'block';
 
-            // Dynamic Rank
-            s.rank = Math.max(1, 10000 - Math.floor(Math.log10(s.e + 1) * 1000));
-            document.getElementById('rank-val').innerText = s.rank;
+            if (s.relics.length > 0) {
+                document.getElementById('forge-list').innerHTML = s.relics.map(r => {
+                    let discount = s.kills >= 50 ? 0.8 : 1;
+                    let cost = Math.floor(s.relicLevels[r] * 15 * discount);
+                    return `<div class="row">
+                        <div>${r} ${RELIC_DATA[r].name}<br><small>Level ${s.relicLevels[r]}</small></div>
+                        <button class="btn" ${s.shards < cost ? 'disabled' : ''} onclick="upgradeRelic('${r}')">${cost} S</button>
+                    </div>`;
+                }).join('');
+            }
 
-            // Colors & Skins
-            let colors = { cyan: '#00f2ff', molten: '#ff8c00', ghostly: '#bc13fe' };
-            document.documentElement.style.setProperty('--active-color', colors[s.skin]);
-
-            ['molten', 'ghostly'].forEach(id => {
-                let btn = document.getElementById('skin-'+id);
-                if (s.skin === id) { btn.innerText = "EQUIPPED"; btn.className = "btn equipped"; }
-                else if (s.owned.includes(id)) { btn.innerText = "EQUIP"; btn.className = "btn owned"; }
+            // Traits UI
+            [10, 25, 50].forEach(k => {
+                let el = document.getElementById('trait-'+k);
+                if (s.kills >= k) { el.classList.remove('trait-locked'); el.classList.add('trait-unlocked'); }
             });
 
-            if (boss.active) document.getElementById('hp-fill').style.width = (boss.hp/boss.max*100) + '%';
-            if (s.e >= 1e6) {
-                document.getElementById('ascend-area').style.display = 'block';
-                document.getElementById('shard-gain').innerText = '+' + Math.floor(Math.sqrt(s.e/1e6)) + ' Shards';
-            }
-
-            localStorage.setItem('void_master_save', JSON.stringify(s));
-        }
-
-        function ascend() {
-            let gain = Math.floor(Math.sqrt(s.e/1e6));
-            if (gain >= 1 && confirm(`Collapse your universe for ${gain} Shards?`)) {
-                s.shards += gain; s.e = 0; s.auto = 0; s.dice = 1; s.ev = 0;
-                updateUI();
-            }
+            localStorage.setItem('void_unified_save', JSON.stringify(s));
         }
 
         function buy(type) {
-            let cost = type==='evolve' ? DICE[s.ev].c : 100 * Math.pow(1.6, type==='auto' ? s.auto : s.dice);
+            let cost = type === 'auto' ? 100 * Math.pow(1.5, s.auto) : DICE[s.ev].c;
             if (s.e >= cost) {
                 s.e -= cost;
-                if(type==='auto') s.auto++; else if(type==='dice') s.dice++; else s.ev++;
+                if(type === 'auto') s.auto++; else s.ev++;
                 updateUI();
             }
         }
 
-        function updateEchoes() {
-            const list = document.getElementById('echoes-list');
-            list.innerHTML = `<div class="row" style="border-color:var(--cyan)"><span>#${s.rank} YOU</span><span>${format(s.e)}</span></div>`;
-            ["Void_X", "Nebula", "Zenith"].forEach((name, i) => {
-                list.innerHTML += `<div class="row" style="opacity:0.6"><span>#${s.rank + (i+1)*5} ${name}</span><span>${format(s.e/(i+2))}</span></div>`;
-            });
-        }
+        setInterval(() => { if (s.auto > 0 && !s.odActive) roll(true); }, 1000 / (s.auto || 0.1));
 
-        setInterval(() => { if(s.auto > 0) roll(true); }, 1000 / (s.auto || 1) / (s.skin === 'ghostly' ? 1.25 : 1));
-        
-        const saved = localStorage.getItem('void_master_save');
+        const saved = localStorage.getItem('void_unified_save');
         if (saved) s = {...s, ...JSON.parse(saved)};
         updateUI();
     </script>
